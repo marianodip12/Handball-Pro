@@ -36,25 +36,25 @@ const ANON_UID_KEY = 'hp_anon_uid';
 
 /**
  * Migrates data from an old user_id (anonymous) to a new one (real account).
- * Called when a user logs in with email, to inherit their anonymous data.
+ * Uses a SECURITY DEFINER function in Supabase to bypass RLS.
  */
 async function migrateAnonDataToRealUser(
   oldUserId: string,
   newUserId: string,
 ): Promise<void> {
-  if (oldUserId === newUserId) return; // Nothing to migrate
+  if (oldUserId === newUserId) return;
   if (!oldUserId || !newUserId) return;
 
   try {
-    // Update all tables that have user_id column
-    const tables = ['teams', 'players', 'matches', 'events'];
-    for (const table of tables) {
-      await supabase
-        .from(table)
-        .update({ user_id: newUserId })
-        .eq('user_id', oldUserId);
+    const { error } = await supabase.rpc('migrate_user_data', {
+      old_user_id: oldUserId,
+      new_user_id: newUserId,
+    });
+    if (error) {
+      console.error('[auth] Migration RPC failed:', error.message);
+    } else {
+      console.log('[auth] Migrated data from', oldUserId, 'to', newUserId);
     }
-    console.log('[auth] Migrated data from', oldUserId, 'to', newUserId);
   } catch (err) {
     console.error('[auth] Migration failed:', err);
   }
