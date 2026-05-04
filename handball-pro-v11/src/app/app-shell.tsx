@@ -16,13 +16,13 @@ export const AppShell = () => {
 
   // When the user changes (login/logout), clear local zustand cache so
   // we don't accidentally show one user's matches under another's account.
-  // We track the user id in a ref-like state via localStorage.
+  // We track the user id to detect when it changes.
   useEffect(() => {
     if (!user) return;
     const KEY = 'hp_last_user_id';
     const last = localStorage.getItem(KEY);
     if (last && last !== user.id) {
-      // Different user — wipe local app state, keep auth session.
+      // User changed — wipe local app state (Supabase migration handles data transfer)
       try {
         localStorage.removeItem('handball-pro-v11');
       } catch {

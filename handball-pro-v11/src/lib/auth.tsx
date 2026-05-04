@@ -32,6 +32,34 @@ interface AuthContextValue extends AuthState {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+const ANON_UID_KEY = 'hp_anon_uid';
+
+/**
+ * Migrates data from an old user_id (anonymous) to a new one (real account).
+ * Called when a user logs in with email, to inherit their anonymous data.
+ */
+async function migrateAnonDataToRealUser(
+  oldUserId: string,
+  newUserId: string,
+): Promise<void> {
+  if (oldUserId === newUserId) return; // Nothing to migrate
+  if (!oldUserId || !newUserId) return;
+
+  try {
+    // Update all tables that have user_id column
+    const tables = ['teams', 'players', 'matches', 'events'];
+    for (const table of tables) {
+      await supabase
+        .from(table)
+        .update({ user_id: newUserId })
+        .eq('user_id', oldUserId);
+    }
+    console.log('[auth] Migrated data from', oldUserId, 'to', newUserId);
+  } catch (err) {
+    console.error('[auth] Migration failed:', err);
+  }
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [state, setState] = useState<AuthState>({
     user: null,
@@ -46,13 +74,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     (async () => {
       try {
         const { data } = await supabase.auth.getSession();
-        setState({ user: data.session?.user ?? null, session: data.session, loading: false });
+        const user = data.session?.user ?? null;
+        setState({ user, session: data.session, loading: false });
+
+        // If user is real (has email), check if we need to migrate data from an old anon user
+        if (user && user.email) {
+          const oldUserId = localStorage.getItem(ANON_UID_KEY);
+          if (oldUserId && oldUserId !== user.id) {
+            await migrateAnonDataToRealUser(oldUserId, user.id);
+          }
+          localStorage.setItem(ANON_UID_KEY, user.id);
+        } else if (user && !user.email) {
+          // Anonymous user
+          localStorage.setItem(ANON_UID_KEY, user.id);
+        }
       } catch {
         setState({ user: null, session: null, loading: false });
       }
 
-      const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-        setState({ user: session?.user ?? null, session, loading: false });
+      const { data: sub } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        const user = session?.user ?? null;
+
+        // On state change, also check for migration needs
+        if (user && user.email) {
+          const oldUserId = localStorage.getItem(ANON_UID_KEY);
+          if (oldUserId && oldUserId !== user.id) {
+            await migrateAnonDataToRealUser(oldUserId, user.id);
+          }
+          localStorage.setItem(ANON_UID_KEY, user.id);
+        } else if (user && !user.email) {
+          localStorage.setItem(ANON_UID_KEY, user.id);
+        }
+
+        setState({ user, session, loading: false });
       });
       unsub = () => sub.subscription.unsubscribe();
     })();
