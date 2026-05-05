@@ -3,6 +3,7 @@ import { useI18n, useT, LOCALE_LABELS, type Locale } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth';
 import { cn } from '@/lib/cn';
 import { InteractiveDemo } from './interactive-demo';
+import { SupportButton } from '@/components/support-button';
 
 const LOCALES: Locale[] = ['es', 'en', 'pt'];
 
@@ -179,6 +180,9 @@ export const LandingPage = () => {
           {t.landing_footer_copyright}
         </div>
       </footer>
+
+      {/* Floating support button */}
+      <SupportButton />
     </div>
   );
 };

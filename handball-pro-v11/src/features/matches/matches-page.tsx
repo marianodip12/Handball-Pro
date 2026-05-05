@@ -7,6 +7,7 @@ import { computeScore } from '@/domain/events';
 import { selectHomeTeam, useMatchStore } from '@/lib/store';
 import { deleteMatchFromServer } from '@/lib/sync';
 import { useT } from '@/lib/i18n';
+import { usePlan } from '@/lib/use-plan';
 import { LiveBanner, MatchCard } from './match-cards';
 import { NewMatchDialog, type NewMatchValues } from './new-match-dialog';
 import { SeasonSummary } from './season-summary';
@@ -15,6 +16,8 @@ export const MatchesPage = () => {
   const navigate = useNavigate();
   const [showNewMatch, setShowNewMatch] = useState(false);
   const t = useT();
+  const { plan, matchCount, matchLimit } = usePlan();
+  const isFreeAtLimit = plan === 'free' && matchLimit > 0 && matchCount >= matchLimit;
 
   const teams       = useMatchStore((s) => s.teams);
   const homeTeam    = useMatchStore(selectHomeTeam);
@@ -69,6 +72,10 @@ export const MatchesPage = () => {
               <Button size="sm" variant="secondary" onClick={() => navigate('/app/teams')}>
                 {t.matches_load_team}
               </Button>
+            ) : isFreeAtLimit ? (
+              <Button size="sm" onClick={() => navigate('/app/plans')} className="bg-amber-600 hover:bg-amber-700 text-white">
+                ⚡ Pasate a Pro
+              </Button>
             ) : (
               <Button size="sm" onClick={() => setShowNewMatch(true)}>
                 <PlusIcon /> {t.matches_new}
@@ -76,6 +83,16 @@ export const MatchesPage = () => {
             )
           )}
         </header>
+
+        {/* Free plan limit banner */}
+        {plan === 'free' && matchLimit > 0 && (
+          <FreePlanBanner
+            count={matchCount}
+            limit={matchLimit}
+            atLimit={isFreeAtLimit}
+            onUpgrade={() => navigate('/app/plans')}
+          />
+        )}
 
         {completed.length > 0 && (
           <SeasonSummary completedMatches={completed} myTeamName={myTeamName} />
@@ -167,3 +184,62 @@ const BallIcon = () => (
     <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4" />
   </svg>
 );
+
+// ─── Banner del plan Free ──────────────────────────────────────
+const FreePlanBanner = ({
+  count, limit, atLimit, onUpgrade,
+}: {
+  count: number;
+  limit: number;
+  atLimit: boolean;
+  onUpgrade: () => void;
+}) => {
+  const remaining = Math.max(0, limit - count);
+  const percentage = Math.min(100, (count / limit) * 100);
+
+  if (atLimit) {
+    return (
+      <div className="rounded-xl border-2 border-amber-500/50 bg-amber-500/10 p-4 flex items-center gap-3">
+        <div className="text-2xl">⚠</div>
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-amber-300">Llegaste al límite del plan Free</p>
+          <p className="text-xs text-amber-200/80 mt-0.5">
+            Ya registraste {count} de {limit} partidos. Pasate a Pro para registrar partidos ilimitados.
+          </p>
+        </div>
+        <Button size="sm" onClick={onUpgrade} className="bg-amber-600 hover:bg-amber-700 text-white whitespace-nowrap">
+          Ver planes →
+        </Button>
+      </div>
+    );
+  }
+
+  // Solo mostramos el banner si está cerca del límite (3 o menos restantes)
+  if (remaining > 3) return null;
+
+  return (
+    <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-3">
+      <div className="flex items-center gap-3">
+        <div className="text-lg">⚡</div>
+        <div className="flex-1">
+          <p className="text-xs font-medium text-yellow-300">
+            Te quedan {remaining} partidos en el plan Free
+          </p>
+          <div className="h-1.5 mt-1.5 bg-yellow-500/10 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-yellow-500 transition-all"
+              style={{ width: `${percentage}%` }}
+            />
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onUpgrade}
+          className="text-xs text-yellow-300 hover:text-yellow-200 font-medium whitespace-nowrap"
+        >
+          Pasate a Pro →
+        </button>
+      </div>
+    </div>
+  );
+};

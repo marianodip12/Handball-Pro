@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/cn';
@@ -51,35 +51,31 @@ export const AdminPage = () => {
   }, []);
 
   const loadMatches = useCallback(async () => {
-    setLoading(true);
     const { data, error } = await supabase.rpc('admin_get_all_matches');
     if (error) {
       console.error('[admin] loadMatches error:', error.message);
     }
     setMatches((data as AdminMatch[]) ?? []);
-    setLoading(false);
   }, []);
 
   const loadUsers = useCallback(async () => {
-    setLoading(true);
     const { data, error } = await supabase.rpc('admin_get_all_users');
     if (error) {
       console.error('[admin] loadUsers error:', error.message);
     }
     setUsers((data as AdminUser[]) ?? []);
-    setLoading(false);
   }, []);
 
   useEffect(() => {
     if (isAdmin !== true) return;
-    if (tab === 'matches') loadMatches();
-    else loadUsers();
-  }, [isAdmin, tab, loadMatches, loadUsers]);
+    setLoading(true);
+    Promise.all([loadMatches(), loadUsers()]).finally(() => setLoading(false));
+  }, [isAdmin, loadMatches, loadUsers]);
 
   const handleDeleteMatch = async (matchId: string, label: string) => {
     if (!window.confirm(`¿Eliminar "${label}"? Esta acción no se puede deshacer.`)) return;
     await supabase.rpc('admin_delete_match', { target_match_id: matchId });
-    loadMatches();
+    await Promise.all([loadMatches(), loadUsers()]);
   };
 
   if (isAdmin === null) {
@@ -113,6 +109,14 @@ export const AdminPage = () => {
     return { text: s, cls: 'bg-surface-2 text-muted-fg border-border' };
   };
 
+  // Only show registered users (not anonymous)
+  const registeredUsers = useMemo(() => users.filter((u) => !u.is_anonymous), [users]);
+
+  // Dashboard stats
+  const totalRegistered = registeredUsers.length;
+  const totalMatches = matches.length;
+  const liveMatches = matches.filter((m) => m.status === 'live').length;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -125,13 +129,20 @@ export const AdminPage = () => {
         </p>
       </div>
 
+      {/* Dashboard stats */}
+      <div className="grid grid-cols-3 gap-3">
+        <StatCard label="Usuarios registrados" value={totalRegistered} color="#3b82f6" />
+        <StatCard label="Partidos totales" value={totalMatches} color="#22c55e" />
+        <StatCard label="En vivo ahora" value={liveMatches} color="#ef4444" />
+      </div>
+
       {/* Tabs */}
       <div className="flex gap-1 rounded-lg border border-border bg-surface p-1 w-fit">
         <TabBtn active={tab === 'matches'} onClick={() => setTab('matches')}>
           📋 Partidos ({matches.length})
         </TabBtn>
         <TabBtn active={tab === 'users'} onClick={() => setTab('users')}>
-          👥 Usuarios ({users.length})
+          👥 Registrados ({registeredUsers.length})
         </TabBtn>
       </div>
 
@@ -217,7 +228,7 @@ export const AdminPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {users.map((u) => (
+                {registeredUsers.map((u) => (
                   <tr key={u.user_id} className="border-b border-border/50 hover:bg-surface-2/30 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
@@ -284,4 +295,13 @@ const TabBtn = ({
   >
     {children}
   </button>
+);
+
+const StatCard = ({ label, value, color }: { label: string; value: number; color: string }) => (
+  <div className="rounded-xl border border-border bg-surface p-4 text-center">
+    <div className="font-mono text-3xl font-bold tabular leading-none" style={{ color }}>
+      {value}
+    </div>
+    <div className="text-[10px] uppercase tracking-widest text-muted-fg mt-2">{label}</div>
+  </div>
 );

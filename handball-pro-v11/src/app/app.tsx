@@ -12,6 +12,7 @@ import { SharePage } from '@/features/share/share-page';
 import { LandingPage } from '@/features/landing/landing-page';
 import { AuthPage } from '@/features/auth/auth-page';
 import { AdminPage } from '@/features/admin/admin-page';
+import { PlansPage } from '@/features/billing/plans-page';
 import { I18nProvider } from '@/lib/i18n';
 import { AuthProvider } from '@/lib/auth';
 
@@ -47,6 +48,7 @@ const router = createBrowserRouter([
           { path: 'evolution', element: <EvolutionPage /> },
           { path: 'analysis/:id', element: <MatchAnalysisPage /> },
           { path: 'admin',       element: <AdminPage /> },
+          { path: 'plans',       element: <PlansPage /> },
         ],
       },
     ],

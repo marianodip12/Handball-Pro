@@ -4,9 +4,11 @@ import { NAV_ITEMS } from '@/domain/constants';
 import { useMatchStore } from '@/lib/store';
 import { useI18n, useT, LOCALE_LABELS, type Locale } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth';
+import { usePlan } from '@/lib/use-plan';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/cn';
 import { TutorialOverlay, useShouldShowTutorial } from '@/features/tutorial/tutorial-overlay';
+import { SupportButton } from '@/components/support-button';
 
 export const AppShell = () => {
   const location = useLocation();
@@ -15,6 +17,7 @@ export const AppShell = () => {
   const t = useT();
   const { locale, setLocale } = useI18n();
   const { user, signOut } = useAuth();
+  const { plan } = usePlan();
   const { show: showTutorial, setShow: setShowTutorial } = useShouldShowTutorial();
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -122,15 +125,40 @@ export const AppShell = () => {
             </NavLink>
           ))}
 
+          {/* Mi Plan link — visible para todos los logueados */}
+          <NavLink
+            to="/app/plans"
+            className={({ isActive }) =>
+              cn(
+                'flex items-center gap-3 px-3 py-2 rounded-md transition-colors text-sm font-medium mt-2 border-t border-border pt-3',
+                isActive
+                  ? 'bg-primary/15 text-primary'
+                  : 'text-muted-fg hover:text-fg hover:bg-surface-2',
+              )
+            }
+          >
+            <span>💳</span>
+            <span className="flex-1">Mi Plan</span>
+            <span className={cn(
+              'text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase',
+              plan === 'free' ? 'bg-surface-2 text-muted-fg' :
+              plan === 'pro' ? 'bg-blue-500/20 text-blue-400' :
+              plan === 'club' ? 'bg-green-500/20 text-green-400' :
+              'bg-amber-500/20 text-amber-400'
+            )}>
+              {plan}
+            </span>
+          </NavLink>
+
           {/* Admin link — only visible for admins */}
           {isAdmin && (
             <NavLink
               to="/app/admin"
               className={({ isActive }) =>
                 cn(
-                  'flex items-center gap-3 px-3 py-2 rounded-md transition-colors text-sm font-medium mt-2 border-t border-border pt-3',
+                  'flex items-center gap-3 px-3 py-2 rounded-md transition-colors text-sm font-medium mt-1',
                   isActive
-                    ? 'bg-primary/15 text-primary border-t border-primary/40'
+                    ? 'bg-primary/15 text-primary'
                     : 'text-muted-fg hover:text-fg hover:bg-surface-2',
                 )
               }
@@ -261,6 +289,9 @@ export const AppShell = () => {
       {showTutorial && (
         <TutorialOverlay onClose={() => setShowTutorial(false)} />
       )}
+
+      {/* Floating support button */}
+      <SupportButton />
     </div>
   );
 };
