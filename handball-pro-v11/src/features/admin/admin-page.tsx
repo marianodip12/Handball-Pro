@@ -52,14 +52,20 @@ export const AdminPage = () => {
 
   const loadMatches = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase.rpc('admin_get_all_matches');
+    const { data, error } = await supabase.rpc('admin_get_all_matches');
+    if (error) {
+      console.error('[admin] loadMatches error:', error.message);
+    }
     setMatches((data as AdminMatch[]) ?? []);
     setLoading(false);
   }, []);
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase.rpc('admin_get_all_users');
+    const { data, error } = await supabase.rpc('admin_get_all_users');
+    if (error) {
+      console.error('[admin] loadUsers error:', error.message);
+    }
     setUsers((data as AdminUser[]) ?? []);
     setLoading(false);
   }, []);
