@@ -11,6 +11,7 @@ import { EvolutionPage } from '@/features/evolution/evolution-page';
 import { SharePage } from '@/features/share/share-page';
 import { LandingPage } from '@/features/landing/landing-page';
 import { AuthPage } from '@/features/auth/auth-page';
+import { AdminPage } from '@/features/admin/admin-page';
 import { I18nProvider } from '@/lib/i18n';
 import { AuthProvider } from '@/lib/auth';
 
@@ -45,6 +46,7 @@ const router = createBrowserRouter([
           { path: 'stats',     element: <StatsPage /> },
           { path: 'evolution', element: <EvolutionPage /> },
           { path: 'analysis/:id', element: <MatchAnalysisPage /> },
+          { path: 'admin',       element: <AdminPage /> },
         ],
       },
     ],

@@ -1,10 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { NAV_ITEMS } from '@/domain/constants';
 import { useMatchStore } from '@/lib/store';
 import { useI18n, useT, LOCALE_LABELS, type Locale } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/cn';
+import { TutorialOverlay, useShouldShowTutorial } from '@/features/tutorial/tutorial-overlay';
 
 export const AppShell = () => {
   const location = useLocation();
@@ -13,6 +15,16 @@ export const AppShell = () => {
   const t = useT();
   const { locale, setLocale } = useI18n();
   const { user, signOut } = useAuth();
+  const { show: showTutorial, setShow: setShowTutorial } = useShouldShowTutorial();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check admin status
+  useEffect(() => {
+    if (!user) return;
+    supabase.rpc('is_current_user_admin').then(({ data }) => {
+      setIsAdmin(data === true);
+    });
+  }, [user]);
 
   // When the user changes (login/logout), clear local zustand cache so
   // we don't accidentally show one user's matches under another's account.
@@ -109,6 +121,35 @@ export const AppShell = () => {
               )}
             </NavLink>
           ))}
+
+          {/* Admin link — only visible for admins */}
+          {isAdmin && (
+            <NavLink
+              to="/app/admin"
+              className={({ isActive }) =>
+                cn(
+                  'flex items-center gap-3 px-3 py-2 rounded-md transition-colors text-sm font-medium mt-2 border-t border-border pt-3',
+                  isActive
+                    ? 'bg-primary/15 text-primary border-t border-primary/40'
+                    : 'text-muted-fg hover:text-fg hover:bg-surface-2',
+                )
+              }
+            >
+              🛡️ <span>Admin</span>
+            </NavLink>
+          )}
+
+          {/* Replay tutorial */}
+          <button
+            type="button"
+            onClick={() => {
+              localStorage.removeItem('hp_tutorial_completed');
+              setShowTutorial(true);
+            }}
+            className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-muted-fg hover:text-fg hover:bg-surface-2 transition-colors mt-1"
+          >
+            ❓ <span>{locale === 'en' ? 'Tutorial' : locale === 'pt' ? 'Tutorial' : 'Tutorial'}</span>
+          </button>
         </div>
 
         {/* Sidebar footer: language + status + account */}
@@ -215,6 +256,11 @@ export const AppShell = () => {
           ))}
         </nav>
       </div>
+
+      {/* Tutorial overlay — shown on first visit */}
+      {showTutorial && (
+        <TutorialOverlay onClose={() => setShowTutorial(false)} />
+      )}
     </div>
   );
 };
