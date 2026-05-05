@@ -5,6 +5,7 @@ import { EmptyState } from '@/components/ui/feedback';
 import { MaxWidthContainer, ResponsiveGrid, Stack } from '@/components/ui/responsive-grid';
 import { computeScore } from '@/domain/events';
 import { selectHomeTeam, useMatchStore } from '@/lib/store';
+import { deleteMatchFromServer } from '@/lib/sync';
 import { useT } from '@/lib/i18n';
 import { LiveBanner, MatchCard } from './match-cards';
 import { NewMatchDialog, type NewMatchValues } from './new-match-dialog';
@@ -45,7 +46,11 @@ export const MatchesPage = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm(t.common_delete_match)) removeCompleted(id);
+    if (window.confirm(t.common_delete_match)) {
+      removeCompleted(id);
+      // Also delete from Supabase so it doesn't come back on refresh
+      deleteMatchFromServer(id);
+    }
   };
 
   return (

@@ -498,6 +498,48 @@ export function getCurrentUserId(): string | null {
   return userId;
 }
 
+/**
+ * Delete a match and its events from Supabase.
+ * Called when the user removes a match from the UI.
+ */
+export async function deleteMatchFromServer(localId: string): Promise<void> {
+  if (!userId || !isSupabaseReady()) return;
+
+  try {
+    // Try cached supabase UUID first
+    let dbId = matchCache.get(localId);
+
+    // If not cached, look it up
+    if (!dbId) {
+      const { data } = await supabase
+        .from('matches')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('local_id', localId)
+        .maybeSingle();
+      if (data) dbId = data.id;
+    }
+
+    if (!dbId) {
+      console.log('[sync] match not found on server, skip delete:', localId);
+      return;
+    }
+
+    // Delete events first (FK constraint)
+    await supabase.from('events').delete().eq('match_id', dbId);
+
+    // Delete the match
+    await supabase.from('matches').delete().eq('id', dbId);
+
+    // Clean caches
+    matchCache.delete(localId);
+
+    console.log('[sync] deleted match from server:', localId, '→', dbId);
+  } catch (err) {
+    console.error('[sync] delete failed:', err);
+  }
+}
+
 export async function forceSyncNow(): Promise<void> {
   if (!userId) {
     userId = await ensureAnonSession();
