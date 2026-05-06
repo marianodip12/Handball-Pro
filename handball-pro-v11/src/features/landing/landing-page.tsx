@@ -3,6 +3,8 @@ import { useI18n, useT, LOCALE_LABELS, type Locale } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth';
 import { cn } from '@/lib/cn';
 import { InteractiveDemo } from './interactive-demo';
+import { ModesShowcase } from './modes-showcase';
+import { PricingSection } from './pricing-section';
 import { SupportButton } from '@/components/support-button';
 
 const LOCALES: Locale[] = ['es', 'en', 'pt'];
@@ -27,6 +29,12 @@ export const LandingPage = () => {
           <nav className="hidden md:flex items-center gap-1 text-sm">
             <a href="#features" className="px-3 py-1.5 rounded-md text-muted-fg hover:text-fg transition-colors">
               {t.landing_nav_features}
+            </a>
+            <a href="#modes" className="px-3 py-1.5 rounded-md text-muted-fg hover:text-fg transition-colors">
+              Modos
+            </a>
+            <a href="#pricing" className="px-3 py-1.5 rounded-md text-muted-fg hover:text-fg transition-colors">
+              Precios
             </a>
             <a href="#demo" className="px-3 py-1.5 rounded-md text-muted-fg hover:text-fg transition-colors">
               {t.landing_nav_demo}
@@ -127,6 +135,9 @@ export const LandingPage = () => {
         </div>
       </section>
 
+      {/* Modes Showcase: Modo Rápido vs Modo Completo */}
+      <ModesShowcase />
+
       {/* Demo */}
       <section id="demo" className="max-w-4xl mx-auto px-4 md:px-6 py-12 md:py-20 w-full">
         <div className="text-center mb-8">
@@ -139,6 +150,9 @@ export const LandingPage = () => {
         </div>
         <InteractiveDemo />
       </section>
+
+      {/* Pricing */}
+      <PricingSection />
 
       {/* Final CTA */}
       <section className="max-w-3xl mx-auto px-4 md:px-6 py-12 md:py-20 text-center">

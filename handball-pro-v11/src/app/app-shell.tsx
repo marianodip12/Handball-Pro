@@ -97,33 +97,43 @@ export const AppShell = () => {
 
         {/* Nav links */}
         <div className="flex-1 flex flex-col gap-1 p-3">
-          {NAV_ITEMS.map((item) => (
-            <NavLink
-              key={item.key}
-              to={item.path}
-              end={item.path === '/app'}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center gap-3 px-3 py-2 rounded-md transition-colors text-sm font-medium',
-                  isActive
-                    ? 'bg-primary/15 text-primary border border-primary/40'
-                    : 'text-muted-fg hover:text-fg hover:bg-surface-2',
-                )
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <NavIcon itemKey={item.key} active={isActive} />
-                  <span>{navLabels[item.key] ?? item.label}</span>
-                  {item.key === 'live' && status === 'live' && (
-                    <span className="ml-auto">
+          {NAV_ITEMS.map((item) => {
+            const isPremium = item.key === 'stats' || item.key === 'evolution';
+            const showLock = isPremium && plan === 'free';
+            return (
+              <NavLink
+                key={item.key}
+                to={item.path}
+                end={item.path === '/app'}
+                className={({ isActive }) =>
+                  cn(
+                    'flex items-center gap-3 px-3 py-2 rounded-md transition-colors text-sm font-medium',
+                    isActive
+                      ? 'bg-primary/15 text-primary border border-primary/40'
+                      : 'text-muted-fg hover:text-fg hover:bg-surface-2',
+                  )
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <NavIcon itemKey={item.key} active={isActive} />
+                    <span className="flex-1">{navLabels[item.key] ?? item.label}</span>
+                    {item.key === 'live' && status === 'live' && (
                       <span className="w-2 h-2 rounded-full bg-danger block" />
-                    </span>
-                  )}
-                </>
-              )}
-            </NavLink>
-          ))}
+                    )}
+                    {showLock && (
+                      <span
+                        className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-blue-500/10 text-blue-400 border border-blue-500/30"
+                        title="Requiere plan Pro"
+                      >
+                        🔒 PRO
+                      </span>
+                    )}
+                  </>
+                )}
+              </NavLink>
+            );
+          })}
 
           {/* Mi Plan link — visible para todos los logueados */}
           <NavLink
@@ -258,30 +268,39 @@ export const AppShell = () => {
 
         {/* Bottom nav — mobile & tablet only */}
         <nav className="lg:hidden fixed md:relative bottom-0 left-0 right-0 z-50 bg-bg/95 backdrop-blur border-t border-border flex pb-[env(safe-area-inset-bottom,0)] md:pb-0 md:flex-row md:justify-center md:gap-2 md:p-3">
-          {NAV_ITEMS.map((item) => (
-            <NavLink
-              key={item.key}
-              to={item.path}
-              end={item.path === '/app'}
-              className={({ isActive }) => cn(
-                'flex-1 md:flex-none py-2.5 md:py-2 md:px-4 flex flex-col md:flex-row md:items-center md:gap-2 items-center gap-1 touch-target transition-colors relative',
-                isActive ? 'text-primary' : 'text-muted-fg hover:text-fg',
-              )}
-            >
-              {({ isActive }) => (
-                <>
-                  {isActive && <span className="absolute md:hidden top-0 left-[20%] right-[20%] h-[2px] rounded-b bg-primary" />}
-                  {item.key === 'live' && status === 'live' && (
-                    <span className="absolute top-1.5 right-[30%] w-1.5 h-1.5 rounded-full bg-danger md:hidden" />
-                  )}
-                  <NavIcon itemKey={item.key} active={isActive} />
-                  <span className="text-[9px] md:text-xs font-medium tracking-wider">
-                    {navLabels[item.key] ?? item.label}
-                  </span>
-                </>
-              )}
-            </NavLink>
-          ))}
+          {NAV_ITEMS.map((item) => {
+            const isPremium = item.key === 'stats' || item.key === 'evolution';
+            const showLock = isPremium && plan === 'free';
+            return (
+              <NavLink
+                key={item.key}
+                to={item.path}
+                end={item.path === '/app'}
+                className={({ isActive }) => cn(
+                  'flex-1 md:flex-none py-2.5 md:py-2 md:px-4 flex flex-col md:flex-row md:items-center md:gap-2 items-center gap-1 touch-target transition-colors relative',
+                  isActive ? 'text-primary' : 'text-muted-fg hover:text-fg',
+                )}
+              >
+                {({ isActive }) => (
+                  <>
+                    {isActive && <span className="absolute md:hidden top-0 left-[20%] right-[20%] h-[2px] rounded-b bg-primary" />}
+                    {item.key === 'live' && status === 'live' && (
+                      <span className="absolute top-1.5 right-[30%] w-1.5 h-1.5 rounded-full bg-danger md:hidden" />
+                    )}
+                    {showLock && (
+                      <span className="absolute top-1 right-[28%] md:static md:ml-1 text-[9px] text-blue-400 md:bg-blue-500/10 md:px-1 md:rounded md:border md:border-blue-500/30">
+                        🔒
+                      </span>
+                    )}
+                    <NavIcon itemKey={item.key} active={isActive} />
+                    <span className="text-[9px] md:text-xs font-medium tracking-wider">
+                      {navLabels[item.key] ?? item.label}
+                    </span>
+                  </>
+                )}
+              </NavLink>
+            );
+          })}
         </nav>
       </div>
 

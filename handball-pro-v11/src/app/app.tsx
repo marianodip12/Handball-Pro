@@ -15,6 +15,7 @@ import { AdminPage } from '@/features/admin/admin-page';
 import { PlansPage } from '@/features/billing/plans-page';
 import { I18nProvider } from '@/lib/i18n';
 import { AuthProvider } from '@/lib/auth';
+import { ProGate } from '@/components/pro-gate';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,9 +45,9 @@ const router = createBrowserRouter([
           { index: true, element: <MatchesPage /> },
           { path: 'teams',     element: <TeamsPage /> },
           { path: 'live',      element: <LiveMatchPage /> },
-          { path: 'stats',     element: <StatsPage /> },
-          { path: 'evolution', element: <EvolutionPage /> },
-          { path: 'analysis/:id', element: <MatchAnalysisPage /> },
+          { path: 'stats',     element: <ProGate><StatsPage /></ProGate> },
+          { path: 'evolution', element: <ProGate><EvolutionPage /></ProGate> },
+          { path: 'analysis/:id', element: <ProGate><MatchAnalysisPage /></ProGate> },
           { path: 'admin',       element: <AdminPage /> },
           { path: 'plans',       element: <PlansPage /> },
         ],

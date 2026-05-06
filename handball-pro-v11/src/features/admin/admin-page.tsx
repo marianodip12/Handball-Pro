@@ -22,6 +22,7 @@ interface AdminUser {
   user_email: string;
   is_anonymous: boolean;
   is_admin: boolean;
+  plan: string;
   matches_count: number;
   teams_count: number;
   created_at: string;
@@ -30,13 +31,20 @@ interface AdminUser {
 type Tab = 'matches' | 'users';
 
 export const AdminPage = () => {
-  
+
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [tab, setTab] = useState<Tab>('matches');
   const [matches, setMatches] = useState<AdminMatch[]>([]);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [seedingUser, setSeedingUser] = useState<string | null>(null);
+
+  // ALL HOOKS FIRST (no conditional returns before this)
+  const registeredUsers = useMemo(() => users.filter((u) => !u.is_anonymous), [users]);
+  const totalRegistered = useMemo(() => registeredUsers.length, [registeredUsers]);
+  const totalMatches = useMemo(() => matches.length, [matches]);
+  const liveMatches = useMemo(() => matches.filter((m) => m.status === 'live').length, [matches]);
 
   // Check admin access
   useEffect(() => {
@@ -78,6 +86,37 @@ export const AdminPage = () => {
     await Promise.all([loadMatches(), loadUsers()]);
   };
 
+  const handleChangePlan = async (userId: string, newPlan: string, email: string) => {
+    if (!window.confirm(`¿Cambiar el plan de ${email} a ${newPlan.toUpperCase()}?`)) return;
+    const { error } = await supabase.rpc('admin_set_user_plan', {
+      target_user_id: userId,
+      new_plan: newPlan,
+    });
+    if (error) {
+      console.error('[admin] changePlan error:', error.message);
+      alert(`Error: ${error.message}`);
+      return;
+    }
+    await loadUsers();
+  };
+
+  const handleSeedDemo = async (userId: string, email: string) => {
+    if (!window.confirm(`¿Crear un partido demo completo para ${email}?\n\nSe creará: Mi Equipo (con 12 jugadores reales) vs Rival, con eventos reales (goles, atajadas, faltas, etc).`)) return;
+    setSeedingUser(userId);
+    try {
+      const { error } = await supabase.rpc('admin_seed_demo_match', { target_user_id: userId });
+      if (error) {
+        console.error('[admin] seed error:', error.message);
+        alert(`Error: ${error.message}`);
+      } else {
+        alert('✓ Partido demo creado con éxito');
+        await Promise.all([loadMatches(), loadUsers()]);
+      }
+    } finally {
+      setSeedingUser(null);
+    }
+  };
+
   if (isAdmin === null) {
     return (
       <div className="flex items-center justify-center py-20 text-muted-fg text-sm">
@@ -108,14 +147,6 @@ export const AdminPage = () => {
     if (s === 'live') return { text: 'En vivo', cls: 'bg-red-500/15 text-red-400 border-red-500/30' };
     return { text: s, cls: 'bg-surface-2 text-muted-fg border-border' };
   };
-
-  // Only show registered users (not anonymous)
-  const registeredUsers = useMemo(() => users.filter((u) => !u.is_anonymous), [users]);
-
-  // Dashboard stats
-  const totalRegistered = registeredUsers.length;
-  const totalMatches = matches.length;
-  const liveMatches = matches.filter((m) => m.status === 'live').length;
 
   return (
     <div className="space-y-6">
@@ -221,10 +252,11 @@ export const AdminPage = () => {
               <thead>
                 <tr className="border-b border-border bg-surface-2/40">
                   <th className="text-left px-4 py-3 text-xs font-semibold text-muted-fg uppercase tracking-wider">Usuario</th>
-                  <th className="text-center px-3 py-3 text-xs font-semibold text-muted-fg uppercase tracking-wider">Tipo</th>
+                  <th className="text-center px-3 py-3 text-xs font-semibold text-muted-fg uppercase tracking-wider">Plan</th>
                   <th className="text-center px-3 py-3 text-xs font-semibold text-muted-fg uppercase tracking-wider">Partidos</th>
                   <th className="text-center px-3 py-3 text-xs font-semibold text-muted-fg uppercase tracking-wider">Equipos</th>
                   <th className="text-left px-3 py-3 text-xs font-semibold text-muted-fg uppercase tracking-wider">Registrado</th>
+                  <th className="text-center px-3 py-3 text-xs font-semibold text-muted-fg uppercase tracking-wider">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -236,34 +268,56 @@ export const AdminPage = () => {
                           'w-7 h-7 rounded-full grid place-items-center text-[10px] font-semibold',
                           u.is_admin
                             ? 'bg-primary/20 text-primary border border-primary/40'
-                            : u.is_anonymous
-                              ? 'bg-surface-2 text-muted-fg border border-border'
-                              : 'bg-green-500/15 text-green-400 border border-green-500/30',
+                            : 'bg-green-500/15 text-green-400 border border-green-500/30',
                         )}>
-                          {u.is_admin ? '👑' : u.is_anonymous ? '?' : u.user_email[0]?.toUpperCase()}
+                          {u.is_admin ? '👑' : u.user_email[0]?.toUpperCase()}
                         </div>
                         <div>
-                          <div className="font-medium text-sm">{u.user_email}</div>
+                          <div className="font-medium text-sm flex items-center gap-2">
+                            {u.user_email}
+                            {u.is_admin && (
+                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/15 text-primary border border-primary/30 uppercase font-semibold tracking-wider">
+                                Admin
+                              </span>
+                            )}
+                          </div>
                           <div className="text-[10px] text-muted-fg font-mono">{u.user_id.slice(0, 8)}…</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-3 py-3 text-center">
-                      <span className={cn(
-                        'text-[10px] px-2 py-0.5 rounded-full border font-semibold uppercase',
-                        u.is_admin
-                          ? 'bg-primary/15 text-primary border-primary/30'
-                          : u.is_anonymous
-                            ? 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30'
-                            : 'bg-green-500/15 text-green-400 border-green-500/30',
-                      )}>
-                        {u.is_admin ? 'Admin' : u.is_anonymous ? 'Anónimo' : 'Registrado'}
-                      </span>
+                      <select
+                        value={u.plan}
+                        onChange={(e) => handleChangePlan(u.user_id, e.target.value, u.user_email)}
+                        className={cn(
+                          'text-[11px] px-2 py-1 rounded border font-semibold uppercase tracking-wider cursor-pointer',
+                          u.plan === 'free' && 'bg-surface-2 text-muted-fg border-border',
+                          u.plan === 'pro' && 'bg-blue-500/15 text-blue-400 border-blue-500/30',
+                          u.plan === 'club' && 'bg-green-500/15 text-green-400 border-green-500/30',
+                          u.plan === 'elite' && 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+                        )}
+                      >
+                        <option value="free">Free</option>
+                        <option value="pro">Pro</option>
+                        <option value="club">Club</option>
+                        <option value="elite">Elite</option>
+                      </select>
                     </td>
                     <td className="px-3 py-3 text-center font-mono">{u.matches_count}</td>
                     <td className="px-3 py-3 text-center font-mono">{u.teams_count}</td>
                     <td className="px-3 py-3 text-xs text-muted-fg whitespace-nowrap">
                       {new Date(u.created_at).toLocaleDateString('es-AR')}
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <button
+                        type="button"
+                        onClick={() => handleSeedDemo(u.user_id, u.user_email)}
+                        disabled={seedingUser === u.user_id}
+                        className="text-[11px] px-2.5 py-1 rounded border border-border hover:bg-surface-2 transition-colors disabled:opacity-50"
+                        title="Crea un partido demo completo (jugadores, eventos, etc)"
+                      >
+                        {seedingUser === u.user_id ? '...' : '🎲 Demo'}
+                      </button>
                     </td>
                   </tr>
                 ))}
