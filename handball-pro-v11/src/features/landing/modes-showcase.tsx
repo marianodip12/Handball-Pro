@@ -155,69 +155,98 @@ const ModeColumn = ({
   );
 };
 
-// Mockup visual del Modo Rápido — botones grandes y simples
+// Mockup del Modo Rápido — botones de eventos como en el live real
 const RapidoMockup = ({ accent }: { accent: string }) => (
-  <div className="grid grid-cols-3 gap-2">
-    {[
-      { label: 'GOL', color: accent },
-      { label: 'ATAJADA', color: '#378ADD' },
-      { label: 'ERRADO', color: '#71717A' },
-      { label: 'PALO', color: '#71717A' },
-      { label: '7M', color: '#BA7517' },
-      { label: '2 MIN', color: '#DC2626' },
-    ].map((b) => (
+  <div className="space-y-2">
+    {/* Fila 1: GOL / ATAJADA */}
+    <div className="grid grid-cols-2 gap-2">
       <div
-        key={b.label}
-        className="h-10 rounded-md grid place-items-center text-[10px] font-bold tracking-wider text-white"
-        style={{ background: b.color }}
+        className="h-9 rounded-md grid place-items-center text-[11px] font-bold tracking-wider text-white"
+        style={{ background: accent }}
       >
-        {b.label}
+        ⚽ GOL
       </div>
-    ))}
+      <div className="h-9 rounded-md grid place-items-center text-[11px] font-bold tracking-wider text-white" style={{ background: '#378ADD' }}>
+        🧤 ATAJADA
+      </div>
+    </div>
+    {/* Fila 2: ERRADO / PALO */}
+    <div className="grid grid-cols-2 gap-2">
+      <div className="h-9 rounded-md grid place-items-center text-[11px] font-bold tracking-wider border" style={{ background: 'transparent', borderColor: '#3F3F46', color: '#A1A1AA' }}>
+        ✕ ERRADO
+      </div>
+      <div className="h-9 rounded-md grid place-items-center text-[11px] font-bold tracking-wider border" style={{ background: 'transparent', borderColor: '#BA7517', color: '#FAC775' }}>
+        ▮ PALO
+      </div>
+    </div>
+    {/* Fila 3: 7m / 2 min / TM */}
+    <div className="grid grid-cols-3 gap-2">
+      <div className="h-7 rounded-md grid place-items-center text-[10px] font-bold tracking-wider text-white" style={{ background: '#7C3AED' }}>
+        7M
+      </div>
+      <div className="h-7 rounded-md grid place-items-center text-[10px] font-bold tracking-wider text-white" style={{ background: '#DC2626' }}>
+        2 MIN
+      </div>
+      <div className="h-7 rounded-md grid place-items-center text-[10px] font-bold tracking-wider border" style={{ background: 'transparent', borderColor: '#3F3F46', color: '#A1A1AA' }}>
+        T.M.
+      </div>
+    </div>
+    {/* Fila 4: tarjetas */}
+    <div className="grid grid-cols-3 gap-2">
+      <div className="h-6 rounded grid place-items-center text-[9px] font-bold text-white" style={{ background: '#EAB308' }}>
+        AMARILLA
+      </div>
+      <div className="h-6 rounded grid place-items-center text-[9px] font-bold text-white" style={{ background: '#3B82F6' }}>
+        AZUL
+      </div>
+      <div className="h-6 rounded grid place-items-center text-[9px] font-bold text-white" style={{ background: '#DC2626' }}>
+        ROJA
+      </div>
+    </div>
   </div>
 );
 
-// Mockup visual del Modo Completo — cancha con zonas + heatmap
+// Mockup del Modo Completo — cuadrante 3x3 del arco + cancha con zona
 const CompletoMockup = ({ accent }: { accent: string }) => (
   <div className="space-y-2">
-    {/* Cancha con zonas */}
-    <div className="relative h-[70px] rounded bg-gradient-to-br from-emerald-900/30 to-emerald-700/20 border border-emerald-700/30 overflow-hidden">
-      {/* Centro */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-px h-full bg-white/20" />
+    {/* Cuadrante 3x3 del arco */}
+    <div>
+      <p className="text-[9px] text-muted-fg uppercase tracking-widest mb-1">¿A qué cuadrante fue?</p>
+      <div className="relative h-[68px] rounded grid grid-cols-3 grid-rows-3 gap-px p-px overflow-hidden border-2" style={{ borderColor: '#DC2626', borderStyle: 'dashed' }}>
+        {[
+          { arrow: '↖', filled: false }, { arrow: '↑', filled: false }, { arrow: '↗', filled: true },
+          { arrow: '←', filled: false }, { arrow: '·', filled: false }, { arrow: '→', filled: false },
+          { arrow: '↙', filled: false }, { arrow: '↓', filled: false }, { arrow: '↘', filled: false },
+        ].map((c, i) => (
+          <div
+            key={i}
+            className="grid place-items-center text-[11px] font-semibold"
+            style={{
+              background: c.filled ? `${accent}40` : 'rgba(255,255,255,0.02)',
+              color: c.filled ? accent : '#71717A',
+            }}
+          >
+            {c.arrow}
+          </div>
+        ))}
       </div>
-      {/* Áreas de portería */}
-      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1/4 h-3/5 border-r border-white/30" />
-      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/4 h-3/5 border-l border-white/30" />
-      {/* Puntos de tiro (heatmap simulation) */}
-      <div className="absolute left-[20%] top-[30%] w-2.5 h-2.5 rounded-full bg-red-500/80 blur-[1px]" />
-      <div className="absolute left-[18%] top-[55%] w-2 h-2 rounded-full bg-red-400/70 blur-[1px]" />
-      <div className="absolute left-[22%] top-[65%] w-3 h-3 rounded-full bg-red-600/90 blur-[2px]" />
-      <div className="absolute right-[20%] top-[40%] w-2 h-2 rounded-full bg-yellow-500/70 blur-[1px]" />
-      <div className="absolute right-[15%] top-[50%] w-2.5 h-2.5 rounded-full bg-orange-500/80 blur-[1px]" />
     </div>
-    {/* Mini stats bars */}
-    <div className="space-y-1">
-      <div className="flex items-center gap-1.5 text-[9px]">
-        <span className="text-muted-fg w-12 text-right">Centro</span>
-        <div className="flex-1 h-1.5 bg-bg/60 rounded-full overflow-hidden">
-          <div className="h-full rounded-full" style={{ width: '78%', background: accent }} />
+
+    {/* Mini cancha con zonas marcadas */}
+    <div>
+      <p className="text-[9px] text-muted-fg uppercase tracking-widest mb-1">¿Desde dónde tiró?</p>
+      <div className="relative h-[44px] rounded bg-gradient-to-b from-blue-950/40 to-blue-900/20 border border-blue-700/30 overflow-hidden">
+        {/* Curva de área */}
+        <div className="absolute inset-x-0 top-0 h-[80%] border-b border-dashed border-white/20" style={{
+          borderRadius: '0 0 50% 50%',
+          background: 'transparent',
+        }} />
+        {/* 7m mark */}
+        <div className="absolute left-1/2 top-[35%] -translate-x-1/2 px-1.5 py-0.5 text-[8px] rounded bg-bg/80 border border-white/20 text-white/80">
+          7m
         </div>
-        <span className="text-fg/80 w-6">78%</span>
-      </div>
-      <div className="flex items-center gap-1.5 text-[9px]">
-        <span className="text-muted-fg w-12 text-right">Punta</span>
-        <div className="flex-1 h-1.5 bg-bg/60 rounded-full overflow-hidden">
-          <div className="h-full rounded-full" style={{ width: '52%', background: accent }} />
-        </div>
-        <span className="text-fg/80 w-6">52%</span>
-      </div>
-      <div className="flex items-center gap-1.5 text-[9px]">
-        <span className="text-muted-fg w-12 text-right">Pivote</span>
-        <div className="flex-1 h-1.5 bg-bg/60 rounded-full overflow-hidden">
-          <div className="h-full rounded-full" style={{ width: '64%', background: accent }} />
-        </div>
-        <span className="text-fg/80 w-6">64%</span>
+        {/* Zona destacada (lateral der.) */}
+        <div className="absolute right-[18%] bottom-0 w-[22%] h-[60%]" style={{ background: `${accent}50`, border: `1px solid ${accent}` }} />
       </div>
     </div>
   </div>

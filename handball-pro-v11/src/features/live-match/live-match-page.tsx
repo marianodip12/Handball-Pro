@@ -197,7 +197,14 @@ export const LiveMatchPage = () => {
     }
     const nextDraft: EventDraft = { ...draft, team: attacker, courtZone: z };
     setDraft(nextDraft);
-    if (mode === 'quick') return;
+    // 7m es especial: aún en modo Rápido, dispara el outcome para que el user
+    // marque qué pasó (gol/atajada/errado/palo) y asocie un jugador.
+    if (mode === 'quick') {
+      if (z === '7m') {
+        setPendingShot({ draft: nextDraft, step: 'outcome' });
+      }
+      return;
+    }
     // If goal zone already picked (arco → cancha order), fire outcome now.
     if (nextDraft.goalZone) {
       setPendingShot({ draft: nextDraft, step: 'outcome' });
@@ -247,7 +254,8 @@ export const LiveMatchPage = () => {
 
   const handleNonShotCta = (type: EventType, team: Team) => {
     const kind = rosterKindFor(type);
-    if (kind === 'none' || mode === 'quick') {
+    if (kind === 'none') {
+      // Eventos sin asociación posible (ej. timeout, half_time)
       addEvent(buildEvent({
         type,
         draft: { ...EMPTY_DRAFT, team },
@@ -257,6 +265,8 @@ export const LiveMatchPage = () => {
       maybeAutoSwitch(type, team);
       return;
     }
+    // En Modo Rápido el picker es opcional pero se ofrece igual
+    // (el user puede saltearlo desde el picker)
     setPendingTagged({
       type: type as PendingTagged['type'],
       team,
