@@ -365,6 +365,69 @@ async function syncAll() {
 // ============================================================================
 // DOWNLOAD - Bajar del servidor para la primera vez
 // ============================================================================
+async function downloadLiveFromServer(uid: string): Promise<void> {
+  try {
+    const local = useMatchStore.getState();
+    // Solo intentar recuperar si no hay partido en vivo local
+    if (local.status === 'live') return;
+
+    const { data: liveMaches } = await supabase
+      .from('matches')
+      .select('*, events(*)')
+      .eq('user_id', uid)
+      .eq('status', 'live')
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (!liveMaches?.length) return;
+
+    const m = liveMaches[0];
+    const localId: string = m.local_id ?? m.id;
+
+    const events: HandballEvent[] = (m.events ?? []).map((e: any): HandballEvent => ({
+      id: e.local_id ?? e.id,
+      min: e.minute ?? 0,
+      team: e.team,
+      type: e.type,
+      zone: e.zone ?? null,
+      goalZone: e.goal_section ?? null,
+      situation: e.situation ?? null,
+      throwType: e.throw_type ?? null,
+      shooter: e.shooter_name ? { name: e.shooter_name, number: e.shooter_number ?? 0 } : null,
+      goalkeeper: e.goalkeeper_name ? { name: e.goalkeeper_name, number: e.goalkeeper_number ?? 0 } : null,
+      sanctioned: e.sanctioned_name ? { name: e.sanctioned_name, number: e.sanctioned_number ?? 0 } : null,
+      hScore: e.h_score ?? 0,
+      aScore: e.a_score ?? 0,
+      quickMode: e.quick_mode ?? false,
+      completed: e.completed ?? true,
+    }));
+
+    matchCache.set(localId, m.id);
+    for (const ev of m.events ?? []) {
+      if (ev.local_id) eventCache.add(ev.local_id);
+    }
+
+    console.log(`[sync] partido en vivo recuperado del servidor: ${m.home_name} vs ${m.away_name}`);
+
+    useMatchStore.setState({
+      status: 'live',
+      liveMatch: {
+        id: localId,
+        home: m.home_name,
+        away: m.away_name,
+        homeColor: m.home_color ?? '#3B82F6',
+        awayColor: m.away_color ?? '#64748B',
+        competition: m.competition ?? 'Liga',
+        round: null,
+        date: m.match_date ?? null,
+      },
+      liveEvents: events,
+    });
+  } catch (e) {
+    console.warn('[sync] downloadLive:', e);
+  }
+}
+
 async function downloadFromServer(uid: string): Promise<void> {
   try {
     // Bajar matches
@@ -463,6 +526,9 @@ export async function initSync(): Promise<void> {
 
   // Bajar del servidor primero
   await downloadFromServer(uid);
+
+  // Recuperar partido en vivo si existe en el servidor
+  await downloadLiveFromServer(uid);
 
   // Sync inicial
   await syncAll();
