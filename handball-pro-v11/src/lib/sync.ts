@@ -363,6 +363,68 @@ async function syncAll() {
 }
 
 // ============================================================================
+// DOWNLOAD TEAMS - Bajar equipos y jugadores del servidor
+// ============================================================================
+async function downloadTeamsFromServer(uid: string): Promise<void> {
+  try {
+    const { data: serverTeams } = await supabase
+      .from('teams')
+      .select('*, players(*)')
+      .eq('user_id', uid)
+      .order('created_at', { ascending: true });
+
+    if (!serverTeams?.length) return;
+
+    // Deduplicar por local_id — quedarse con el primero de cada local_id
+    const byLocalId = new Map<string, any>();
+    for (const t of serverTeams) {
+      const lid = t.local_id ?? t.id;
+      if (!byLocalId.has(lid)) {
+        byLocalId.set(lid, t);
+      }
+      // Siempre poblar el cache con el db id más reciente
+      teamCache.set(lid, t.id);
+    }
+
+    const local = useMatchStore.getState();
+    const localTeamIds = new Set(local.teams.map((t) => t.id));
+    const newTeams: HandballTeam[] = [];
+
+    for (const [localId, t] of byLocalId) {
+      if (localTeamIds.has(localId)) continue;
+
+      const players: Player[] = (t.players ?? []).map((p: any): Player => {
+        if (p.local_id) playerCache.set(p.local_id, p.id);
+        return {
+          id: p.local_id ?? p.id,
+          name: p.name,
+          number: p.number ?? 0,
+          position: p.position ?? null,
+        };
+      });
+
+      newTeams.push({
+        id: localId,
+        name: t.name,
+        color: t.color ?? '#3B82F6',
+        players,
+      });
+    }
+
+    if (newTeams.length > 0) {
+      console.log(`[sync] descargados ${newTeams.length} equipos del servidor`);
+      const merged = [...newTeams, ...local.teams];
+      useMatchStore.setState({
+        teams: merged,
+        selectedTeamId: local.selectedTeamId ?? merged[0]?.id ?? null,
+      });
+    }
+  } catch (e) {
+    console.warn('[sync] downloadTeams:', e);
+  }
+}
+
+// ============================================================================
 // DOWNLOAD - Bajar del servidor para la primera vez
 // ============================================================================
 async function downloadLiveFromServer(uid: string): Promise<void> {
@@ -525,6 +587,7 @@ export async function initSync(): Promise<void> {
   console.log('[sync] user:', uid);
 
   // Bajar del servidor primero
+  await downloadTeamsFromServer(uid);
   await downloadFromServer(uid);
 
   // Recuperar partido en vivo si existe en el servidor
