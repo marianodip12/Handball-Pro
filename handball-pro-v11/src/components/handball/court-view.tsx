@@ -24,13 +24,13 @@ const PATH: Record<DrawableZoneId, string> = {
   near_left:     'M 65 132 Q 106 158 148 174 L 148 300 L 65 300 Z',
   near_center:   'M 148 174 L 212 174 L 212 300 L 148 300 Z',
   near_right:    'M 212 174 Q 254 158 295 132 L 295 300 L 212 300 Z',
-  '7m':          'M 148 125 L 212 125 Q 224 125 224 137 Q 224 149 212 149 L 148 149 Q 136 149 136 137 Q 136 125 148 125 Z',
+  '7m':          'M 148 158 L 212 158 Q 224 158 224 170 Q 224 182 212 182 L 148 182 Q 136 182 136 170 Q 136 158 148 158 Z',
 };
 
 const LABEL_POS: Record<Exclude<DrawableZoneId, '7m'>, { x: number; y: number }> = {
   extreme_left:  { x: 32,  y: 85 },
   lateral_left:  { x: 106, y: 135 },
-  center_above:  { x: 180, y: 140 },
+  center_above:  { x: 180, y: 105 },
   lateral_right: { x: 254, y: 135 },
   extreme_right: { x: 328, y: 85 },
   near_left:     { x: 106, y: 225 },
@@ -241,9 +241,9 @@ const CourtViewComponent = ({
         {/* 7m badge */}
         {!turnoverMode && (
           <g onClick={() => click('7m')} style={{ cursor: 'pointer' }}>
-            <rect x="148" y="125" width="64" height="24" rx="12"
+            <rect x="148" y="158" width="64" height="24" rx="12"
               fill={isSelected('7m') ? 'var(--court-selected)' : '#ffffff'} />
-            <text x="180" y="141" textAnchor="middle"
+            <text x="180" y="174" textAnchor="middle"
               fill={isSelected('7m') ? '#fff' : '#0b1a2e'}
               fontSize="12" fontWeight="800" style={{ pointerEvents: 'none' }}>
               7m{seventhCount > 0 ? ` (${seventhCount})` : ''}

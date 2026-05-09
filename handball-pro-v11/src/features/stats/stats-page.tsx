@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { ProGate } from '@/components/pro-gate';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,6 +18,25 @@ import { cn } from '@/lib/cn';
 type StatsView = 'resumen' | 'jugadores';
 
 export const StatsPage = () => {
+  return (
+    <ProGate
+      requires="pro"
+      title="Estadísticas de temporada"
+      description="Pasate al plan Pro para acceder al análisis completo de tus estadísticas: eficacia, goles por jugador, comparativas entre partidos y tendencias de temporada."
+      features={[
+        'Eficacia y stats por jugador',
+        'Comparativas entre partidos',
+        'Tendencias por temporada',
+        'Top goleadores y lanzadores',
+        'Exportar análisis en PDF',
+      ]}
+    >
+      <StatsPageInner />
+    </ProGate>
+  );
+};
+
+const StatsPageInner = () => {
   const t = useT();
   const navigate = useNavigate();
   const completed = useMatchStore((s) => s.completed);

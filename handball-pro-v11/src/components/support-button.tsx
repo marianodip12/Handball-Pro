@@ -7,8 +7,8 @@ const EMAIL = 'marianonicoslosada@gmail.com';
 export const SupportButton = () => {
   const [open, setOpen] = useState(false);
 
-  const waUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent('Hola! Necesito ayuda con Handball Pro')}`;
-  const mailUrl = `mailto:${EMAIL}?subject=${encodeURIComponent('Soporte Handball Pro')}`;
+  const waUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent('Hola! Necesito ayuda con StatzPro')}`;
+  const mailUrl = `mailto:${EMAIL}?subject=${encodeURIComponent('Soporte StatzPro')}`;
 
   return (
     <div className="fixed bottom-20 md:bottom-6 right-4 z-50 flex flex-col items-end gap-2">

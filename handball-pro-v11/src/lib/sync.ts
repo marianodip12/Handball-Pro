@@ -34,53 +34,29 @@ async function syncTeam(team: HandballTeam, uid: string): Promise<string | null>
   if (teamCache.has(team.id)) return teamCache.get(team.id) ?? null;
 
   try {
-    // Buscar por local_id
     const { data: existing } = await supabase
-      .from('teams')
-      .select('id')
-      .eq('user_id', uid)
-      .eq('local_id', team.id)
-      .maybeSingle();
+      .from('teams').select('id')
+      .eq('user_id', uid).eq('local_id', team.id).maybeSingle();
 
     let dbId: string;
     if (existing?.id) {
       dbId = existing.id;
-      // Actualizar nombre/color por si cambió
-      await supabase
-        .from('teams')
-        .update({ name: team.name, color: team.color })
-        .eq('id', dbId);
+      await supabase.from('teams').update({ name: team.name, color: team.color }).eq('id', dbId);
     } else {
       const { data, error } = await supabase
         .from('teams')
-        .insert({
-          user_id: uid,
-          name: team.name,
-          color: team.color,
-          local_id: team.id,
-        })
-        .select('id')
-        .single();
-
-      if (error || !data) {
-        console.warn('[sync] team error:', error?.message);
-        return null;
-      }
+        .insert({ user_id: uid, name: team.name, color: team.color, local_id: team.id })
+        .select('id').single();
+      if (error || !data) { console.warn('[sync] team error:', error?.message); return null; }
       dbId = data.id;
     }
 
     teamCache.set(team.id, dbId);
-
-    // Sync players de este team
     for (const player of team.players ?? []) {
       await syncPlayer(player, dbId, uid);
     }
-
     return dbId;
-  } catch (e) {
-    console.warn('[sync] team:', e);
-    return null;
-  }
+  } catch (e) { console.warn('[sync] team:', e); return null; }
 }
 
 async function syncPlayer(player: Player, teamDbId: string, uid: string): Promise<string | null> {
@@ -88,51 +64,29 @@ async function syncPlayer(player: Player, teamDbId: string, uid: string): Promis
 
   try {
     const { data: existing } = await supabase
-      .from('players')
-      .select('id')
-      .eq('user_id', uid)
-      .eq('local_id', player.id)
-      .maybeSingle();
+      .from('players').select('id')
+      .eq('user_id', uid).eq('local_id', player.id).maybeSingle();
 
     let dbId: string;
     if (existing?.id) {
       dbId = existing.id;
-      await supabase
-        .from('players')
-        .update({
-          name: player.name,
-          number: player.number,
-          position: player.position,
-          team_id: teamDbId,
-        })
-        .eq('id', dbId);
+      await supabase.from('players').update({
+        name: player.name, number: player.number, position: player.position, team_id: teamDbId,
+      }).eq('id', dbId);
     } else {
       const { data, error } = await supabase
         .from('players')
         .insert({
-          user_id: uid,
-          team_id: teamDbId,
-          name: player.name,
-          number: player.number,
-          position: player.position,
-          local_id: player.id,
-        })
-        .select('id')
-        .single();
-
-      if (error || !data) {
-        console.warn('[sync] player error:', error?.message);
-        return null;
-      }
+          user_id: uid, team_id: teamDbId,
+          name: player.name, number: player.number, position: player.position, local_id: player.id,
+        }).select('id').single();
+      if (error || !data) { console.warn('[sync] player error:', error?.message); return null; }
       dbId = data.id;
     }
 
     playerCache.set(player.id, dbId);
     return dbId;
-  } catch (e) {
-    console.warn('[sync] player:', e);
-    return null;
-  }
+  } catch (e) { console.warn('[sync] player:', e); return null; }
 }
 
 // ============================================================================
@@ -141,70 +95,43 @@ async function syncPlayer(player: Player, teamDbId: string, uid: string): Promis
 async function syncMatch(match: MatchSummary, uid: string): Promise<string | null> {
   if (matchCache.has(match.id)) {
     const dbId = matchCache.get(match.id);
-    if (dbId) {
-      await syncEventsFor(match.events, dbId, uid);
-      return dbId;
-    }
+    if (dbId) { await syncEventsFor(match.events, dbId, uid); return dbId; }
   }
 
   try {
     const { data: existing } = await supabase
-      .from('matches')
-      .select('id')
-      .eq('user_id', uid)
-      .eq('local_id', match.id)
-      .maybeSingle();
+      .from('matches').select('id')
+      .eq('user_id', uid).eq('local_id', match.id).maybeSingle();
 
     let dbId: string;
     if (existing?.id) {
       dbId = existing.id;
-      await supabase
-        .from('matches')
-        .update({
-          home_name: match.home,
-          away_name: match.away,
-          home_score: match.hs,
-          away_score: match.as,
-          home_color: match.homeColor,
-          away_color: match.awayColor,
-          match_date: match.date,
-          competition: match.competition,
-          status: 'finished',
-        })
-        .eq('id', dbId);
+      await supabase.from('matches').update({
+        home_name: match.home, away_name: match.away,
+        home_score: match.hs, away_score: match.as,
+        home_color: match.homeColor, away_color: match.awayColor,
+        match_date: match.date, competition: match.competition,
+        status: 'finished',
+      }).eq('id', dbId);
     } else {
       const { data, error } = await supabase
         .from('matches')
         .insert({
-          user_id: uid,
-          local_id: match.id,
-          home_name: match.home,
-          away_name: match.away,
-          home_score: match.hs,
-          away_score: match.as,
-          home_color: match.homeColor,
-          away_color: match.awayColor,
-          match_date: match.date,
-          competition: match.competition,
+          user_id: uid, local_id: match.id,
+          home_name: match.home, away_name: match.away,
+          home_score: match.hs, away_score: match.as,
+          home_color: match.homeColor, away_color: match.awayColor,
+          match_date: match.date, competition: match.competition,
           status: 'finished',
-        })
-        .select('id')
-        .single();
-
-      if (error || !data) {
-        console.warn('[sync] match error:', error?.message);
-        return null;
-      }
+        }).select('id').single();
+      if (error || !data) { console.warn('[sync] match error:', error?.message); return null; }
       dbId = data.id;
     }
 
     matchCache.set(match.id, dbId);
     await syncEventsFor(match.events, dbId, uid);
     return dbId;
-  } catch (e) {
-    console.warn('[sync] match:', e);
-    return null;
-  }
+  } catch (e) { console.warn('[sync] match:', e); return null; }
 }
 
 async function syncEventsFor(events: HandballEvent[], matchDbId: string, uid: string) {
@@ -213,49 +140,30 @@ async function syncEventsFor(events: HandballEvent[], matchDbId: string, uid: st
 
     try {
       const { data: existing } = await supabase
-        .from('events')
-        .select('id')
-        .eq('user_id', uid)
-        .eq('local_id', ev.id)
-        .maybeSingle();
+        .from('events').select('id')
+        .eq('user_id', uid).eq('local_id', ev.id).maybeSingle();
 
-      if (existing?.id) {
-        eventCache.add(ev.id);
-        continue;
-      }
+      if (existing?.id) { eventCache.add(ev.id); continue; }
 
       const { error } = await supabase.from('events').insert({
-        user_id: uid,
-        match_id: matchDbId,
-        local_id: ev.id,
-        minute: ev.min,
-        team: ev.team,
-        type: ev.type,
-        zone: ev.zone ?? null,
-        goal_section: ev.goalZone ?? null,
-        situation: ev.situation ?? null,
-        throw_type: ev.throwType ?? null,
-        shooter_name: ev.shooter?.name ?? null,
-        shooter_number: ev.shooter?.number ?? null,
-        goalkeeper_name: ev.goalkeeper?.name ?? null,
-        goalkeeper_number: ev.goalkeeper?.number ?? null,
-        sanctioned_name: ev.sanctioned?.name ?? null,
-        sanctioned_number: ev.sanctioned?.number ?? null,
-        h_score: ev.hScore,
-        a_score: ev.aScore,
-        completed: ev.completed,
-        quick_mode: ev.quickMode,
+        user_id: uid, match_id: matchDbId, local_id: ev.id,
+        minute: ev.min, team: ev.team, type: ev.type,
+        zone: ev.zone ?? null, goal_section: ev.goalZone ?? null,
+        situation: ev.situation ?? null, throw_type: ev.throwType ?? null,
+        shooter_name: ev.shooter?.name ?? null, shooter_number: ev.shooter?.number ?? null,
+        goalkeeper_name: ev.goalkeeper?.name ?? null, goalkeeper_number: ev.goalkeeper?.number ?? null,
+        sanctioned_name: ev.sanctioned?.name ?? null, sanctioned_number: ev.sanctioned?.number ?? null,
+        h_score: ev.hScore, a_score: ev.aScore,
+        completed: ev.completed, quick_mode: ev.quickMode,
       });
 
       if (!error) eventCache.add(ev.id);
-    } catch (e) {
-      console.warn('[sync] event:', e);
-    }
+    } catch (e) { console.warn('[sync] event:', e); }
   }
 }
 
 // ============================================================================
-// LIVE MATCH (sincroniza también el partido en curso)
+// LIVE MATCH
 // ============================================================================
 async function syncLiveMatch(uid: string): Promise<void> {
   const state = useMatchStore.getState();
@@ -263,7 +171,6 @@ async function syncLiveMatch(uid: string): Promise<void> {
   if (!state.liveMatch.id) return;
   if (!state.liveMatch.home || !state.liveMatch.away) return;
 
-  // Tipos seguros (TypeScript-friendly)
   const liveId: string = state.liveMatch.id;
   const homeName: string = state.liveMatch.home;
   const awayName: string = state.liveMatch.away;
@@ -280,11 +187,8 @@ async function syncLiveMatch(uid: string): Promise<void> {
       dbId = cached;
     } else {
       const { data: existing } = await supabase
-        .from('matches')
-        .select('id')
-        .eq('user_id', uid)
-        .eq('local_id', liveId)
-        .maybeSingle();
+        .from('matches').select('id')
+        .eq('user_id', uid).eq('local_id', liveId).maybeSingle();
 
       if (existing?.id) {
         dbId = existing.id;
@@ -292,42 +196,26 @@ async function syncLiveMatch(uid: string): Promise<void> {
         const { data, error } = await supabase
           .from('matches')
           .insert({
-            user_id: uid,
-            local_id: liveId,
-            home_name: homeName,
-            away_name: awayName,
-            home_score: 0,
-            away_score: 0,
-            home_color: homeColor,
-            away_color: awayColor,
-            match_date: matchDate,
-            competition: competition,
+            user_id: uid, local_id: liveId,
+            home_name: homeName, away_name: awayName,
+            home_score: 0, away_score: 0,
+            home_color: homeColor, away_color: awayColor,
+            match_date: matchDate, competition: competition,
             status: 'live',
-          })
-          .select('id')
-          .single();
-
-        if (error || !data) {
-          console.warn('[sync] live match error:', error?.message);
-          return;
-        }
+          }).select('id').single();
+        if (error || !data) { console.warn('[sync] live match error:', error?.message); return; }
         dbId = data.id;
       }
       matchCache.set(liveId, dbId);
     }
 
-    // Actualizar score en vivo
     const { h, a } = computeRunningScore(state.liveEvents);
-    await supabase
-      .from('matches')
+    await supabase.from('matches')
       .update({ home_score: h, away_score: a, status: 'live' })
       .eq('id', dbId);
 
-    // Sync de eventos del partido en curso
     await syncEventsFor(state.liveEvents, dbId, uid);
-  } catch (e) {
-    console.warn('[sync] live:', e);
-  }
+  } catch (e) { console.warn('[sync] live:', e); }
 }
 
 function computeRunningScore(events: HandballEvent[]): { h: number; a: number } {
@@ -341,48 +229,31 @@ function computeRunningScore(events: HandballEvent[]): { h: number; a: number } 
 }
 
 // ============================================================================
-// SYNC ALL (todo el store)
+// SYNC ALL
 // ============================================================================
 async function syncAll() {
   if (!userId) return;
-
   const state = useMatchStore.getState();
-
-  // Teams + players
-  for (const team of state.teams) {
-    await syncTeam(team, userId);
-  }
-
-  // Completed matches + their events
-  for (const match of state.completed) {
-    await syncMatch(match, userId);
-  }
-
-  // Live match
+  for (const team of state.teams) await syncTeam(team, userId);
+  for (const match of state.completed) await syncMatch(match, userId);
   await syncLiveMatch(userId);
 }
 
 // ============================================================================
-// DOWNLOAD TEAMS - Bajar equipos y jugadores del servidor
+// DOWNLOAD TEAMS
 // ============================================================================
 async function downloadTeamsFromServer(uid: string): Promise<void> {
   try {
     const { data: serverTeams } = await supabase
-      .from('teams')
-      .select('*, players(*)')
-      .eq('user_id', uid)
-      .order('created_at', { ascending: true });
+      .from('teams').select('*, players(*)')
+      .eq('user_id', uid).order('created_at', { ascending: true });
 
     if (!serverTeams?.length) return;
 
-    // Deduplicar por local_id — quedarse con el primero de cada local_id
     const byLocalId = new Map<string, any>();
     for (const t of serverTeams) {
       const lid = t.local_id ?? t.id;
-      if (!byLocalId.has(lid)) {
-        byLocalId.set(lid, t);
-      }
-      // Siempre poblar el cache con el db id más reciente
+      if (!byLocalId.has(lid)) byLocalId.set(lid, t);
       teamCache.set(lid, t.id);
     }
 
@@ -419,27 +290,21 @@ async function downloadTeamsFromServer(uid: string): Promise<void> {
         selectedTeamId: local.selectedTeamId ?? merged[0]?.id ?? null,
       });
     }
-  } catch (e) {
-    console.warn('[sync] downloadTeams:', e);
-  }
+  } catch (e) { console.warn('[sync] downloadTeams:', e); }
 }
 
 // ============================================================================
-// DOWNLOAD - Bajar del servidor para la primera vez
+// DOWNLOAD LIVE MATCH
 // ============================================================================
 async function downloadLiveFromServer(uid: string): Promise<void> {
   try {
     const local = useMatchStore.getState();
-    // Solo intentar recuperar si no hay partido en vivo local
     if (local.status === 'live') return;
 
     const { data: liveMaches } = await supabase
-      .from('matches')
-      .select('*, events(*)')
-      .eq('user_id', uid)
-      .eq('status', 'live')
-      .order('created_at', { ascending: false })
-      .limit(1);
+      .from('matches').select('*, events(*)')
+      .eq('user_id', uid).eq('status', 'live')
+      .order('created_at', { ascending: false }).limit(1);
 
     if (!liveMaches?.length) return;
 
@@ -485,19 +350,17 @@ async function downloadLiveFromServer(uid: string): Promise<void> {
       },
       liveEvents: events,
     });
-  } catch (e) {
-    console.warn('[sync] downloadLive:', e);
-  }
+  } catch (e) { console.warn('[sync] downloadLive:', e); }
 }
 
+// ============================================================================
+// DOWNLOAD MATCHES
+// ============================================================================
 async function downloadFromServer(uid: string): Promise<void> {
   try {
-    // Bajar matches
     const { data: serverMatches } = await supabase
-      .from('matches')
-      .select('*, events(*)')
-      .eq('user_id', uid)
-      .eq('status', 'finished')
+      .from('matches').select('*, events(*)')
+      .eq('user_id', uid).eq('status', 'finished')
       .order('created_at', { ascending: false });
 
     if (!serverMatches?.length) return;
@@ -555,13 +418,9 @@ async function downloadFromServer(uid: string): Promise<void> {
 
     if (newOnes.length > 0) {
       console.log(`[sync] descargados ${newOnes.length} partidos del servidor`);
-      useMatchStore.setState({
-        completed: [...newOnes, ...local.completed],
-      });
+      useMatchStore.setState({ completed: [...newOnes, ...local.completed] });
     }
-  } catch (e) {
-    console.warn('[sync] download:', e);
-  }
+  } catch (e) { console.warn('[sync] download:', e); }
 }
 
 // ============================================================================
@@ -589,8 +448,6 @@ export async function initSync(): Promise<void> {
   // Bajar del servidor primero
   await downloadTeamsFromServer(uid);
   await downloadFromServer(uid);
-
-  // Recuperar partido en vivo si existe en el servidor
   await downloadLiveFromServer(uid);
 
   // Sync inicial
@@ -616,9 +473,6 @@ export function stopSync(): void {
   initialized = false;
 }
 
-/**
- * Devuelve el UUID de Supabase de un match local, o null si no se sincronizó.
- */
 export function getServerMatchId(localId: string): string | null {
   return matchCache.get(localId) ?? null;
 }
@@ -627,25 +481,16 @@ export function getCurrentUserId(): string | null {
   return userId;
 }
 
-/**
- * Delete a match and its events from Supabase.
- * Called when the user removes a match from the UI.
- */
 export async function deleteMatchFromServer(localId: string): Promise<void> {
   if (!userId || !isSupabaseReady()) return;
 
   try {
-    // Try cached supabase UUID first
     let dbId = matchCache.get(localId);
 
-    // If not cached, look it up
     if (!dbId) {
       const { data } = await supabase
-        .from('matches')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('local_id', localId)
-        .maybeSingle();
+        .from('matches').select('id')
+        .eq('user_id', userId).eq('local_id', localId).maybeSingle();
       if (data) dbId = data.id;
     }
 
@@ -654,13 +499,8 @@ export async function deleteMatchFromServer(localId: string): Promise<void> {
       return;
     }
 
-    // Delete events first (FK constraint)
     await supabase.from('events').delete().eq('match_id', dbId);
-
-    // Delete the match
     await supabase.from('matches').delete().eq('id', dbId);
-
-    // Clean caches
     matchCache.delete(localId);
 
     console.log('[sync] deleted match from server:', localId, '→', dbId);

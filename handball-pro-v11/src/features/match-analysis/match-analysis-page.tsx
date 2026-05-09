@@ -651,7 +651,7 @@ const ShareButton = ({ matchId }: { matchId: string }) => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Análisis Handball Pro',
+          title: 'Análisis StatzPro',
           text: 'Mirá el análisis del partido',
           url: shareUrl,
         });

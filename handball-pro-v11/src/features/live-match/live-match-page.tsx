@@ -29,6 +29,19 @@ import { EventTimeline } from './event-timeline';
 import { ShotOutcomeDialog, type ShotOutcome } from './shot-outcome-dialog';
 import { EventEditDialog } from './event-edit-dialog';
 import { eventChangesPossession, otherTeam } from '@/domain/recommendations';
+import { LiveMatchFree } from './live-match-free';
+import { hasCompleteMode, usePlan } from '@/lib/use-plan';
+
+// ─── Plan-aware wrapper ──────────────────────────────────────────────────────
+export const LiveMatchPage = () => {
+  const { plan, isAdmin, loading } = usePlan();
+  if (loading) {
+    return <div className="flex items-center justify-center py-20 text-sm text-muted-fg">Cargando…</div>;
+  }
+  if (!isAdmin && !hasCompleteMode(plan)) return <LiveMatchFree />;
+  return <LiveMatchPagePro />;
+};
+
 /**
  * TODO: Para usar el responsive layout en live-match-page:
  *
@@ -107,7 +120,7 @@ interface PendingTagged {
   team: Team;
 }
 
-export const LiveMatchPage = () => {
+const LiveMatchPagePro = () => {
   const navigate = useNavigate();
   const t = useT();
 

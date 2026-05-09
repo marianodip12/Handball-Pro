@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/auth';
 import { cn } from '@/lib/cn';
 
 const WA_NUMBER = '541126647764';
-const WA_MSG = encodeURIComponent('Hola, me interesa el plan Elite de Handball Pro. ¿Podemos charlar?');
+const WA_MSG = encodeURIComponent('Hola, me interesa el plan Elite de StatzPro. ¿Podemos charlar?');
 
 type Cycle = 'monthly' | 'annual';
 

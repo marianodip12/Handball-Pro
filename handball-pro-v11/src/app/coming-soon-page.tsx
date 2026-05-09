@@ -8,7 +8,7 @@ export const ComingSoonPage = ({ title }: { title: string }) => {
     <div className="space-y-4">
       <header>
         <div className="text-[10px] font-semibold tracking-[3px] uppercase text-primary mb-1">
-          Handball Pro
+          StatzPro
         </div>
         <h1 className="text-2xl font-semibold leading-tight">{title}</h1>
       </header>

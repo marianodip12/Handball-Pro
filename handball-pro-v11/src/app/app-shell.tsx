@@ -83,11 +83,9 @@ export const AppShell = () => {
         {/* Logo */}
         <div className="p-4 border-b border-border">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-md bg-primary grid place-items-center text-xs font-semibold text-primary-fg">
-              HP
-            </div>
+            <img src="/statzpro-favicon.svg" alt="StatzPro" className="w-8 h-8 rounded-md" />
             <div>
-              <div className="text-sm font-semibold">Handball Pro</div>
+              <div className="text-sm font-semibold">StatzPro</div>
               <span className="text-[9px] px-1.5 py-[1px] rounded bg-primary/15 border border-primary/30 text-primary font-semibold tracking-wider">
                 v11
               </span>
@@ -227,8 +225,8 @@ export const AppShell = () => {
         {/* Mobile/tablet header */}
         <header className="lg:hidden px-4 pt-3 pb-3 flex items-center justify-between border-b border-border bg-surface-2/40">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-primary grid place-items-center text-[10px] font-semibold text-primary-fg">HP</div>
-            <span className="text-[13px] font-medium tracking-tight">Handball Pro</span>
+            <img src="/statzpro-favicon.svg" alt="StatzPro" className="w-6 h-6 rounded-md" />
+            <span className="text-[13px] font-medium tracking-tight">StatzPro</span>
             <span className="text-[9px] px-1.5 py-[1px] rounded bg-primary/15 border border-primary/30 text-primary font-semibold tracking-wider">v11</span>
           </div>
           <div className="flex items-center gap-2">

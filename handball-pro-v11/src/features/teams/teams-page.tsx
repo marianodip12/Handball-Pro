@@ -67,7 +67,7 @@ export const TeamsPage = () => {
         <header className="flex items-start justify-between flex-col md:flex-row md:gap-4">
           <div>
             <div className="text-[10px] font-semibold tracking-[3px] uppercase text-primary mb-1">
-              Handball Pro
+              StatzPro
             </div>
             <h1 className="text-3xl md:text-4xl font-semibold leading-tight">{t.teams_title}</h1>
             <p className="text-xs text-muted-fg mt-1">

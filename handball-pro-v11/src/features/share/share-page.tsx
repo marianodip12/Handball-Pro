@@ -68,7 +68,7 @@ export const SharePage = () => {
             <div className="text-2xl">😕</div>
             <p className="text-sm text-muted-fg">{error ?? 'Partido no encontrado.'}</p>
             <Link to="/" className="inline-block text-sm text-primary hover:underline">
-              Ir a Handball Pro
+              Ir a StatzPro
             </Link>
           </CardContent>
         </Card>
@@ -93,8 +93,8 @@ export const SharePage = () => {
       <header className="border-b border-border bg-surface/60 backdrop-blur sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-primary grid place-items-center text-[10px] font-semibold text-primary-fg">HP</div>
-            <span className="text-sm font-semibold">Handball Pro</span>
+            <img src="/statzpro-favicon.svg" alt="StatzPro" className="w-7 h-7 rounded-md" />
+            <span className="text-sm font-semibold">StatzPro</span>
             <span className="text-[9px] px-1.5 py-[1px] rounded bg-primary/15 border border-primary/30 text-primary font-semibold tracking-wider">v11</span>
           </Link>
           <Badge tone="primary">📊 Análisis compartido</Badge>
@@ -189,7 +189,7 @@ export const SharePage = () => {
         {/* Footer */}
         <Card>
           <CardContent className="p-4 text-center text-xs text-muted-fg">
-            Análisis generado con <Link to="/" className="text-primary hover:underline">Handball Pro v11</Link>
+            Análisis generado con <Link to="/" className="text-primary hover:underline">StatzPro v11</Link>
           </CardContent>
         </Card>
       </main>

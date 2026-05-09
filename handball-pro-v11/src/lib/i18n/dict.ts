@@ -436,7 +436,7 @@ const es: Dict = {
   landing_cta_button: 'Crear mi cuenta',
   landing_footer_tagline: 'Análisis de handball para entrenadores y analistas.',
   landing_footer_contact: 'Contacto',
-  landing_footer_copyright: '© 2026 Handball Pro · Todos los derechos reservados',
+  landing_footer_copyright: '© 2026 StatzPro · Todos los derechos reservados',
 
   // Auth
   auth_signin_title: 'Iniciar sesión',
@@ -655,7 +655,7 @@ const en: Dict = {
   landing_cta_button: 'Create my account',
   landing_footer_tagline: 'Handball analytics for coaches and analysts.',
   landing_footer_contact: 'Contact',
-  landing_footer_copyright: '© 2026 Handball Pro · All rights reserved',
+  landing_footer_copyright: '© 2026 StatzPro · All rights reserved',
 
   // Auth
   auth_signin_title: 'Sign in',
@@ -874,7 +874,7 @@ const pt: Dict = {
   landing_cta_button: 'Criar minha conta',
   landing_footer_tagline: 'Análise de handebol para treinadores e analistas.',
   landing_footer_contact: 'Contato',
-  landing_footer_copyright: '© 2026 Handball Pro · Todos os direitos reservados',
+  landing_footer_copyright: '© 2026 StatzPro · Todos os direitos reservados',
 
   // Auth
   auth_signin_title: 'Entrar',

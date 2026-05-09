@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { ProGate } from '@/components/pro-gate';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,25 @@ import { cn } from '@/lib/cn';
 type ViewKind = 'season' | 'match';
 
 export const EvolutionPage = () => {
+  return (
+    <ProGate
+      requires="pro"
+      title="Evolución del equipo"
+      description="Pasate al plan Pro para ver cómo evoluciona tu equipo partido a partido: tendencias, momentos clave y comparativas de temporada."
+      features={[
+        'Gráfico de evolución de resultados',
+        'Momentos clave de cada partido',
+        'Comparativa entre temporadas',
+        'Tendencias de eficacia y goles',
+        'Exportar análisis en PDF',
+      ]}
+    >
+      <EvolutionPageInner />
+    </ProGate>
+  );
+};
+
+const EvolutionPageInner = () => {
   const t = useT();
   const navigate = useNavigate();
   const completed = useMatchStore((s) => s.completed);

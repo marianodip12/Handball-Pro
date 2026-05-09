@@ -16,7 +16,7 @@ interface TutorialStep {
 const useTutorialSteps = (): TutorialStep[] => {
   return [
     {
-      title: '¡Bienvenido a Handball Pro! 🤾',
+      title: '¡Bienvenido a StatzPro! 🤾',
       description: 'Te vamos a mostrar cómo funciona la app en 6 pasos rápidos. Podés saltearlo cuando quieras.',
       icon: '👋',
       position: 'center',

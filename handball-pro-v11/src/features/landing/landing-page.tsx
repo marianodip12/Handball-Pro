@@ -23,7 +23,7 @@ export const LandingPage = () => {
             <div className="w-7 h-7 rounded-md bg-primary grid place-items-center text-[11px] font-semibold text-primary-fg">
               HP
             </div>
-            <span className="text-sm font-semibold tracking-tight">Handball Pro</span>
+            <span className="text-sm font-semibold tracking-tight">StatzPro</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-1 text-sm">

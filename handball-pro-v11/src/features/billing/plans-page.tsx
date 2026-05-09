@@ -12,7 +12,7 @@ export const PlansPage = () => {
 
   const handleSelectPlan = (plan: Plan) => {
     if (plan === 'elite') {
-      const msg = encodeURIComponent('Hola, me interesa el plan Elite de Handball Pro. ¿Podemos charlar?');
+      const msg = encodeURIComponent('Hola, me interesa el plan Elite de StatzPro. ¿Podemos charlar?');
       window.open(`https://wa.me/${WA_NUMBER}?text=${msg}`, '_blank');
       return;
     }
@@ -25,7 +25,7 @@ export const PlansPage = () => {
     <div className="space-y-6 max-w-6xl mx-auto pb-12">
       {/* Header */}
       <div className="text-center space-y-2 pt-2">
-        <p className="text-[10px] tracking-[0.2em] text-muted-fg uppercase">Handball Pro</p>
+        <p className="text-[10px] tracking-[0.2em] text-muted-fg uppercase">StatzPro</p>
         <h1 className="text-2xl md:text-3xl font-bold">Empezá gratis. Crece con vos.</h1>
         <p className="text-sm text-muted-fg max-w-xl mx-auto">
           10 partidos gratis para probar la app. Pasate a Pro o Club cuando quieras más análisis.
