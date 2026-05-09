@@ -33,12 +33,14 @@ import { LiveMatchFree } from './live-match-free';
 import { hasCompleteMode, usePlan } from '@/lib/use-plan';
 
 // ─── Plan-aware wrapper ──────────────────────────────────────────────────────
+// Nota: el plan determina qué se ve. Si el admin se pone como Free, ve como Free
+// (esto es útil para testing). Para acceder a admin features, está /app/admin.
 export const LiveMatchPage = () => {
-  const { plan, isAdmin, loading } = usePlan();
+  const { plan, loading } = usePlan();
   if (loading) {
     return <div className="flex items-center justify-center py-20 text-sm text-muted-fg">Cargando…</div>;
   }
-  if (!isAdmin && !hasCompleteMode(plan)) return <LiveMatchFree />;
+  if (!hasCompleteMode(plan)) return <LiveMatchFree />;
   return <LiveMatchPagePro />;
 };
 

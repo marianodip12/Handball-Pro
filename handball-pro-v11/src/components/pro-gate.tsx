@@ -31,7 +31,7 @@ export const ProGate = ({
   features,
 }: ProGateProps) => {
   const navigate = useNavigate();
-  const { plan, isAdmin, loading } = usePlan();
+  const { plan, loading } = usePlan();
 
   if (loading) {
     return (
@@ -41,9 +41,7 @@ export const ProGate = ({
     );
   }
 
-  // Admin siempre tiene acceso
-  if (isAdmin) return <>{children}</>;
-
+  // El plan determina el acceso. El admin que se setea como Free ve como Free.
   const hasAccess = requires === 'club' ? hasVideoAndAI(plan) : hasCompleteMode(plan);
   if (hasAccess) return <>{children}</>;
 
@@ -182,8 +180,7 @@ export const ProGateInline = ({
  * Hook helper para chequear acceso programáticamente sin renderizar UI.
  */
 export const useHasPlanAccess = (requires: 'pro' | 'club' = 'pro'): boolean => {
-  const { plan, isAdmin } = usePlan();
-  if (isAdmin) return true;
+  const { plan } = usePlan();
   return requires === 'club' ? hasVideoAndAI(plan) : hasCompleteMode(plan);
 };
 
