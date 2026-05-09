@@ -1,5 +1,5 @@
 {
-  "name": "handball-pro-v11",
+  "name": "statzpro-v11",
   "private": true,
   "version": "11.0.0",
   "type": "module",
@@ -41,5 +41,6 @@
     "typescript": "^5.6.2",
     "vite": "^5.4.8",
     "vitest": "^2.1.1"
-  }
+  },
+  "description": "StatzPro \u00b7 An\u00e1lisis profesional de handball"
 }
