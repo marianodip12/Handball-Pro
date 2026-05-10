@@ -7,19 +7,6 @@ import { cn } from '@/lib/cn';
 // ─── Configuración (cambiar acá si cambia el USD o el CBU) ────────────
 const USD_TO_ARS = 1430;
 
-const MP_LINKS: Record<string, Record<'monthly' | 'annual', string>> = {
-  // ⚠️ TODO: reemplazar con los links reales de MercadoPago
-  // Generá los links en https://www.mercadopago.com.ar/cobrar
-  pro:  {
-    monthly: 'https://mpago.la/REEMPLAZAR-PRO-MENSUAL',
-    annual:  'https://mpago.la/REEMPLAZAR-PRO-ANUAL',
-  },
-  club: {
-    monthly: 'https://mpago.la/REEMPLAZAR-CLUB-MENSUAL',
-    annual:  'https://mpago.la/REEMPLAZAR-CLUB-ANUAL',
-  },
-};
-
 const TRANSFER_INFO = {
   cbu_alias: 'STATZPRO.MP', // ⚠️ TODO: reemplazar con tu alias/CBU real
   cbu: '0000003100012345678901',
@@ -68,7 +55,8 @@ export const CheckoutDialog = ({ open, onClose, plan, billingCycle }: CheckoutDi
     setSubmitting(true);
     setError(null);
     try {
-      const { data, error: rpcError } = await supabase.rpc('create_payment_request', {
+      // 1. Crear el payment_request en la BD
+      const { data: prId, error: rpcError } = await supabase.rpc('create_payment_request', {
         p_plan: plan,
         p_billing_cycle: billingCycle,
         p_payment_method: 'mercadopago',
@@ -77,23 +65,25 @@ export const CheckoutDialog = ({ open, onClose, plan, billingCycle }: CheckoutDi
         p_notes: null,
       });
       if (rpcError) throw rpcError;
-      setPaymentId(data);
+      setPaymentId(prId);
 
-      // Abrir link de MercadoPago en nueva pestaña
-      const mpLink = MP_LINKS[plan]?.[billingCycle];
-      if (mpLink && !mpLink.includes('REEMPLAZAR')) {
-        window.open(mpLink, '_blank');
-      } else {
-        // Fallback: si no hay link configurado, abrir WhatsApp
-        const msg = encodeURIComponent(
-          `Hola! Quiero suscribirme al plan ${info.label} ${billingCycle === 'annual' ? 'ANUAL' : 'MENSUAL'} ($${usd} USD = $${ars.toLocaleString('es-AR')} ARS) con MercadoPago. ID de solicitud: ${data}`,
-        );
-        window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank');
+      // 2. Pedir a la edge function la preference de MP
+      const { data: prefData, error: fnError } = await supabase.functions.invoke('mp-create-preference', {
+        body: {
+          payment_request_id: prId,
+          origin: window.location.origin,
+        },
+      });
+      if (fnError) throw fnError;
+      if (!prefData?.init_point) {
+        throw new Error('No se pudo crear el checkout de Mercado Pago');
       }
-      setStep('sent');
+
+      // 3. Redirigir al checkout oficial de MP
+      //    (window.location, no window.open, para que la vuelta back_url funcione bien)
+      window.location.href = prefData.init_point;
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al crear solicitud');
-    } finally {
+      setError(e instanceof Error ? e.message : 'Error al crear el checkout');
       setSubmitting(false);
     }
   };
