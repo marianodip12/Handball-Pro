@@ -120,6 +120,8 @@ interface PendingShot {
 interface PendingTagged {
   type: Exclude<EventType, 'goal' | 'miss' | 'saved' | 'post' | 'timeout' | 'half_time'>;
   team: Team;
+  /** Zona de la cancha preservada del draft (para que turnover/exclusion la registren). */
+  courtZone: import('@/domain/types').CourtZoneId | null;
 }
 
 const LiveMatchPagePro = () => {
@@ -282,26 +284,33 @@ const LiveMatchPagePro = () => {
         clock,
         quickMode: mode === 'quick',
       }));
+      // Limpiamos la zona ya marcada para que no quede colgada en draft
+      setDraft({ ...EMPTY_DRAFT, team: attacker });
       maybeAutoSwitch(type, team);
       return;
     }
     // En Modo Rápido el picker es opcional pero se ofrece igual
     // (el user puede saltearlo desde el picker)
+    // 🔑 Preservamos draft.courtZone para que turnover/exclusion la registren
     setPendingTagged({
       type: type as PendingTagged['type'],
       team,
+      courtZone: draft.courtZone,
     });
   };
 
   const handleTaggedPicked = (p: PersonRef | null) => {
     if (!pendingTagged) return;
-    const { type, team } = pendingTagged;
+    const { type, team, courtZone } = pendingTagged;
     const kind = rosterKindFor(type);
     addEvent(buildEvent({
       type,
       draft: {
         ...EMPTY_DRAFT,
         team,
+        // 🔑 Preservamos la zona de cancha que el usuario haya tocado antes
+        // (sin esto, los turnovers/exclusiones nunca aparecen en el mapa de calor)
+        courtZone: courtZone ?? null,
         shooter: kind === 'possession' ? p : null,
       },
       clock,
@@ -309,6 +318,8 @@ const LiveMatchPagePro = () => {
       sanctioned: kind === 'sanctioned' ? p : null,
     }));
     setPendingTagged(null);
+    // Limpiamos draft.courtZone para que no se aplique al próximo evento
+    setDraft({ ...EMPTY_DRAFT, team: attacker });
     maybeAutoSwitch(type, team);
   };
 
@@ -556,8 +567,15 @@ const LiveMatchPagePro = () => {
 
       {/* Non-shot events (no big shot CTAs anymore) */}
       <section>
-        <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-fg mb-1.5">
-          {t.live_other_events}
+        <div className="flex items-center justify-between mb-1.5">
+          <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-fg">
+            {t.live_other_events}
+          </div>
+          {draft.courtZone && (
+            <div className="text-[10px] text-primary">
+              📍 Zona <strong className="font-mono">{draft.courtZone}</strong> → se aplicará a Pérdida / 2'
+            </div>
+          )}
         </div>
         <div className="grid grid-cols-4 gap-1.5">
           <Button
