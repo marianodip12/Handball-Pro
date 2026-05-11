@@ -53,13 +53,15 @@ export const Dialog = ({
       aria-modal="true"
       aria-labelledby={title ? 'dialog-title' : undefined}
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 pb-20 sm:pb-4 animate-fade-in"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
     >
-      <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-        aria-hidden="true"
+      {/* Backdrop con su propio onClick — sin esto, en mobile el modal no se
+          puede cerrar tocando afuera porque el backdrop absorbe el evento
+          antes de llegar al contenedor padre. */}
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Cerrar"
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm cursor-default"
       />
       <div
         ref={ref}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useT } from '@/lib/i18n';
 import { Dialog } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -26,17 +26,26 @@ export const ShotOutcomeDialog = ({ open, onClose, goalZone, courtZone, onConfir
   const t = useT();
   const [situation, setSituation] = useState<Situation | null>(null);
 
+  // Protección anti-doble-tap: una vez que el usuario toca un outcome, bloqueamos
+  // los botones por 600ms. Esto evita que un tap nervioso o un doble-tap de iOS
+  // registre 2 goles del mismo tiro.
+  const lockedRef = useRef(false);
+
   const goalLabel = goalZone === 'post' ? t.live_palo : goalZone === 'out' ? t.live_fuera
     : goalZone ? `${GOAL_QUADRANTS[goalZone].arrow} ${GOAL_QUADRANTS[goalZone].label}` : null;
   const courtLabel = courtZone ? COURT_ZONES[courtZone].label : null;
 
   const handleConfirm = (outcome: ShotOutcome) => {
+    if (lockedRef.current) return;
+    lockedRef.current = true;
+    setTimeout(() => { lockedRef.current = false; }, 600);
     onConfirm(outcome, situation);
     setSituation(null); // Reset para próximo tiro
   };
 
   const handleClose = () => {
     setSituation(null);
+    lockedRef.current = false;
     onClose();
   };
 
@@ -89,10 +98,20 @@ export const ShotOutcomeDialog = ({ open, onClose, goalZone, courtZone, onConfir
         <Button variant="success" onClick={() => handleConfirm('goal')} className="h-14 text-base">{t.outcome_goal}</Button>
         <Button onClick={() => handleConfirm('saved')} className="h-14 text-base bg-save hover:bg-save/90">{t.outcome_saved}</Button>
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2 mb-3">
         <Button variant="secondary" onClick={() => handleConfirm('miss')} className="h-11 text-sm">{t.outcome_miss}</Button>
         <Button variant="secondary" onClick={() => handleConfirm('post')} className="h-11 text-sm text-warning border-warning/40 bg-warning/10">{t.outcome_post}</Button>
       </div>
+
+      {/* Botón Cancelar grande y visible — el bug original era que en mobile no
+          había forma de cerrar el modal sin registrar un evento. */}
+      <Button
+        variant="ghost"
+        onClick={handleClose}
+        className="w-full h-11 text-sm text-muted-fg border border-border"
+      >
+        ✕ Cancelar (no registrar tiro)
+      </Button>
     </Dialog>
   );
 };

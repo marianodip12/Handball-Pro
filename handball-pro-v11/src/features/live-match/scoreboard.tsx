@@ -41,6 +41,16 @@ export const Scoreboard = ({ home, away, homeColor, awayColor, homeScore, awaySc
   const toggle = () => onClockChange({ ...clock, running: !clock.running });
   const adjust = (delta: number) => onClockChange(adjustClock(clock, delta));
 
+  // Mostramos el botón "Pasar al 2do tiempo" cuando estamos en 1T y pasamos del
+  // minuto 25 — así el usuario lo tiene a la vista en la recta final del 1T
+  // y al llegar al descanso. El bug original era que el cambio de tiempo estaba
+  // enterrado dentro del dialog de "Ajustar".
+  const showStartSecondHalf = clock.half === 1 && clock.seconds >= 25 * 60;
+
+  const startSecondHalf = () => {
+    onClockChange({ seconds: 0, half: 2, running: false });
+  };
+
   return (
     <>
       <div className="rounded-lg border border-border bg-surface p-3">
@@ -92,6 +102,18 @@ export const Scoreboard = ({ home, away, homeColor, awayColor, homeScore, awaySc
             Ajustar
           </Button>
         </div>
+
+        {/* Botón para pasar al 2do tiempo — visible desde el minuto 25 del 1T */}
+        {showStartSecondHalf && (
+          <Button
+            size="sm"
+            variant="primary"
+            onClick={startSecondHalf}
+            className="w-full h-10 text-xs mt-2 bg-primary/90 hover:bg-primary"
+          >
+            ▶ Pasar al 2do tiempo (reinicia el reloj a 0:00)
+          </Button>
+        )}
       </div>
 
       <EditClockDialog
