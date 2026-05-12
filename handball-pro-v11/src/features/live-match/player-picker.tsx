@@ -150,6 +150,41 @@ export const PlayerPicker = ({
               </div>
             </section>
           ))}
+
+          {/* ➕ Agregar jugador no registrado — SIEMPRE visible debajo del roster.
+              Antes este form sólo aparecía si el equipo no tenía roster cargado,
+              pero hay casos comunes (juvenil que sube, refuerzo de último momento)
+              donde el coach quiere taggear a alguien que no figura en la planilla. */}
+          <section className="mt-2 pt-3 border-t border-border">
+            <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-fg mb-1.5">
+              ➕ {t.picker_new}
+            </div>
+            <div className="grid grid-cols-[auto_1fr] gap-2">
+              <div>
+                <Label>{t.player_dialog_number}</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={99}
+                  value={freeNumber}
+                  onChange={(e) => setFreeNumber(e.target.value)}
+                  className="mt-1 font-mono w-20"
+                />
+              </div>
+              <div>
+                <Label>{t.picker_name_optional}</Label>
+                <Input
+                  value={freeName}
+                  onChange={(e) => setFreeName(e.target.value)}
+                  placeholder="—"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+            <Button onClick={handleFreeText} disabled={!freeNumber} className="mt-2 w-full" variant="secondary">
+              {t.picker_add}
+            </Button>
+          </section>
         </div>
       ) : (
         <div className="flex flex-col gap-3">

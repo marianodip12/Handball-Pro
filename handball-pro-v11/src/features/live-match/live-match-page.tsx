@@ -30,17 +30,18 @@ import { ShotOutcomeDialog, type ShotOutcome } from './shot-outcome-dialog';
 import { EventEditDialog } from './event-edit-dialog';
 import { eventChangesPossession, otherTeam } from '@/domain/recommendations';
 import { LiveMatchFree } from './live-match-free';
+import { SuperpowerBar } from './superpower-bar';
 import { hasCompleteMode, usePlan } from '@/lib/use-plan';
 
 // ─── Plan-aware wrapper ──────────────────────────────────────────────────────
 // Nota: el plan determina qué se ve. Si el admin se pone como Free, ve como Free
 // (esto es útil para testing). Para acceder a admin features, está /app/admin.
 export const LiveMatchPage = () => {
-  const { plan, loading } = usePlan();
+  const { plan, loading, betaActive } = usePlan();
   if (loading) {
     return <div className="flex items-center justify-center py-20 text-sm text-muted-fg">Cargando…</div>;
   }
-  if (!hasCompleteMode(plan)) return <LiveMatchFree />;
+  if (!hasCompleteMode({ plan, betaActive })) return <LiveMatchFree />;
   return <LiveMatchPagePro />;
 };
 
@@ -404,6 +405,7 @@ const LiveMatchPagePro = () => {
 
   return (
     <div className="space-y-3 pb-4">
+      <SuperpowerBar />
       <Scoreboard
         home={match.home}
         away={match.away}

@@ -31,7 +31,7 @@ export const ProGate = ({
   features,
 }: ProGateProps) => {
   const navigate = useNavigate();
-  const { plan, loading } = usePlan();
+  const { plan, loading, betaActive } = usePlan();
 
   if (loading) {
     return (
@@ -42,7 +42,10 @@ export const ProGate = ({
   }
 
   // El plan determina el acceso. El admin que se setea como Free ve como Free.
-  const hasAccess = requires === 'club' ? hasVideoAndAI(plan) : hasCompleteMode(plan);
+  // Durante la beta, betaActive desbloquea todo.
+  const hasAccess = requires === 'club'
+    ? hasVideoAndAI({ plan, betaActive })
+    : hasCompleteMode({ plan, betaActive });
   if (hasAccess) return <>{children}</>;
 
   const cfg = requires === 'club' ? CLUB_CONFIG : PRO_CONFIG;
@@ -180,8 +183,10 @@ export const ProGateInline = ({
  * Hook helper para chequear acceso programáticamente sin renderizar UI.
  */
 export const useHasPlanAccess = (requires: 'pro' | 'club' = 'pro'): boolean => {
-  const { plan } = usePlan();
-  return requires === 'club' ? hasVideoAndAI(plan) : hasCompleteMode(plan);
+  const { plan, betaActive } = usePlan();
+  return requires === 'club'
+    ? hasVideoAndAI({ plan, betaActive })
+    : hasCompleteMode({ plan, betaActive });
 };
 
 // Re-export for convenience

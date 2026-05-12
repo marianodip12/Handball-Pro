@@ -1,3 +1,10 @@
+// ⚠️ ORDEN CRÍTICO DE IMPORTS:
+// `./lib/app-version` corre `runVersionCheck()` como side-effect en su evaluación
+// inicial. Tiene que ser el PRIMER import que toque algo del proyecto, porque
+// si zustand (`./lib/store`) se evalúa primero, persist re-hidrata desde
+// localStorage antes del wipe y los datos "sucios" sobreviven.
+import './lib/app-version';
+
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app/app';

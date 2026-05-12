@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/cn';
+import { AdminTicketsPanel } from './admin-tickets-panel';
 
 interface AdminMatch {
   match_id: string;
@@ -44,7 +45,7 @@ interface AdminPayment {
   paid_at: string | null;
 }
 
-type Tab = 'matches' | 'users' | 'payments';
+type Tab = 'matches' | 'users' | 'payments' | 'tickets';
 
 export const AdminPage = () => {
 
@@ -225,6 +226,9 @@ export const AdminPage = () => {
             </span>
           )}
         </TabBtn>
+        <TabBtn active={tab === 'tickets'} onClick={() => setTab('tickets')}>
+          🎫 Tickets
+        </TabBtn>
       </div>
 
       {loading ? (
@@ -375,7 +379,7 @@ export const AdminPage = () => {
             </table>
           </div>
         </div>
-      ) : (
+      ) : tab === 'payments' ? (
         /* ─── PAYMENTS TABLE ─── */
         <div className="rounded-xl border border-border bg-surface overflow-hidden">
           {payments.length === 0 ? (
@@ -476,6 +480,11 @@ export const AdminPage = () => {
               </table>
             </div>
           )}
+        </div>
+      ) : (
+        /* ─── TICKETS ─── */
+        <div className="rounded-xl border border-border bg-surface p-4 md:p-5">
+          <AdminTicketsPanel />
         </div>
       )}
     </div>

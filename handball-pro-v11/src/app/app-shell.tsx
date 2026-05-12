@@ -9,11 +9,14 @@ import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/cn';
 import { TutorialOverlay, useShouldShowTutorial } from '@/features/tutorial/tutorial-overlay';
 import { SupportButton } from '@/components/support-button';
+import { BetaBanner } from '@/components/beta-banner';
+import { SettingsPanel } from '@/components/settings-panel';
 
 export const AppShell = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const status = useMatchStore((s) => s.status);
+  const uiProMax = useMatchStore((s) => s.uiProMax);
   const t = useT();
   const { locale, setLocale } = useI18n();
   const { user, signOut } = useAuth();
@@ -77,7 +80,7 @@ export const AppShell = () => {
     : locale === 'en' ? 'No match' : locale === 'pt' ? 'Sem jogo' : 'Sin partido';
 
   return (
-    <div className="min-h-screen flex bg-bg text-fg">
+    <div className={cn('min-h-screen flex bg-bg text-fg', uiProMax && 'ui-pro-max')}>
       {/* ── Sidebar — desktop only ─────────────────────────────────────── */}
       <nav className="hidden lg:flex lg:w-64 lg:flex-col lg:border-r lg:border-border lg:bg-surface lg:overflow-y-auto lg:fixed lg:inset-0">
         {/* Logo */}
@@ -146,6 +149,21 @@ export const AppShell = () => {
             </span>
           </NavLink>
 
+          {/* Soporte link — visible para todos los logueados */}
+          <NavLink
+            to="/app/support"
+            className={({ isActive }) =>
+              cn(
+                'flex items-center gap-3 px-3 py-2 rounded-md transition-colors text-sm font-medium mt-1',
+                isActive
+                  ? 'bg-primary/15 text-primary'
+                  : 'text-muted-fg hover:text-fg hover:bg-surface-2',
+              )
+            }
+          >
+            💬 <span>Soporte</span>
+          </NavLink>
+
           {/* Admin link — only visible for admins */}
           {isAdmin && (
             <NavLink
@@ -162,6 +180,11 @@ export const AppShell = () => {
               🛡️ <span>Admin</span>
             </NavLink>
           )}
+
+          {/* Modos experimentales (Superpower / UI Pro Max) */}
+          <div className="mt-1">
+            <SettingsPanel />
+          </div>
 
           {/* Replay tutorial */}
           <button
@@ -248,6 +271,7 @@ export const AppShell = () => {
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
           <div className="w-full mx-auto lg:max-w-6xl">
+            <BetaBanner className="mb-3" />
             <Outlet />
           </div>
         </main>

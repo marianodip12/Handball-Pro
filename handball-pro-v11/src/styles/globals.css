@@ -103,3 +103,91 @@
            text-xs font-medium border border-border bg-surface-2/60;
   }
 }
+
+/* ─── UI PRO MAX — tema visual premium opcional ─────────────────────
+ * Se activa cuando el AppShell tiene la clase `.ui-pro-max` en su root.
+ * Filosofía:
+ *   - tipografía con tracking y peso refinados
+ *   - microanimaciones consistentes (hover lift, subtle gradients)
+ *   - más densidad de info (rounded más chico, padding más justo)
+ *   - cards con borde de gradiente sutil que reacciona al hover
+ *
+ * IMPORTANTE: todo enchufado bajo `.ui-pro-max` para que no afecte la UI
+ * default. Si querés expandir el modo, agregá reglas más abajo.
+ */
+.ui-pro-max {
+  /* Tipografía más pulida: tracking sutilmente negativo en titulares,
+     numerales tabulares siempre en stats. */
+  font-feature-settings: 'cv11', 'ss01', 'tnum';
+  letter-spacing: -0.005em;
+}
+.ui-pro-max h1,
+.ui-pro-max h2 {
+  letter-spacing: -0.02em;
+  font-weight: 600;
+}
+.ui-pro-max .tabular,
+.ui-pro-max [class*="font-mono"] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Aprovechar mejor espacio en tablet+: padding lateral más generoso pero
+   max-width más ancho. */
+@media (min-width: 1024px) {
+  .ui-pro-max main > div {
+    max-width: 80rem !important;
+  }
+}
+
+/* Cards: gradiente sutil en borde y lift al hover (sólo en pointer:fine,
+   no en touch porque hover en mobile es engañoso). */
+@media (hover: hover) and (pointer: fine) {
+  .ui-pro-max [class*="rounded-xl"][class*="border-border"]:not(button):not(a),
+  .ui-pro-max [class*="rounded-2xl"][class*="border-border"]:not(button):not(a) {
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  }
+  .ui-pro-max [class*="rounded-xl"][class*="border-border"]:not(button):not(a):hover,
+  .ui-pro-max [class*="rounded-2xl"][class*="border-border"]:not(button):not(a):hover {
+    border-color: hsl(var(--primary) / 0.35);
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.08), 0 6px 24px -12px hsl(var(--primary) / 0.25);
+  }
+}
+
+/* Botones primarios: gradient sutil + brillo en hover. */
+.ui-pro-max button[class*="bg-primary"]:not([class*="bg-primary/"]) {
+  background-image: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.85) 100%);
+  box-shadow: 0 1px 0 hsl(0 0% 100% / 0.1) inset, 0 4px 14px -4px hsl(var(--primary) / 0.4);
+}
+.ui-pro-max button[class*="bg-primary"]:not([class*="bg-primary/"]):hover {
+  filter: brightness(1.08);
+}
+
+/* Sidebar nav: indicador activo más expresivo. */
+.ui-pro-max nav a[class*="bg-primary/15"] {
+  position: relative;
+  background-image: linear-gradient(90deg, hsl(var(--primary) / 0.18), hsl(var(--primary) / 0.06));
+}
+.ui-pro-max nav a[class*="bg-primary/15"]::before {
+  content: '';
+  position: absolute;
+  left: -0.75rem;
+  top: 20%;
+  bottom: 20%;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: hsl(var(--primary));
+}
+
+/* Animación de entrada para secciones nuevas — más suave que default. */
+.ui-pro-max .animate-fade-in {
+  animation-duration: 280ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Scoreboard / numerales grandes: peso tipográfico extra. */
+.ui-pro-max [class*="text-3xl"][class*="font-mono"],
+.ui-pro-max [class*="text-4xl"][class*="font-mono"],
+.ui-pro-max [class*="text-5xl"][class*="font-mono"] {
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { cn } from '@/lib/cn';
 
 const WA_NUMBER = '541126647764';
@@ -15,6 +16,14 @@ export const SupportButton = () => {
       {/* Options */}
       {open && (
         <div className="flex flex-col gap-2 mb-1 animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <Link
+            to="/app/support"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-surface border border-primary/40 text-primary text-sm font-medium shadow-lg hover:bg-primary/10 transition-colors"
+          >
+            <span className="text-base leading-none">🎫</span>
+            Crear ticket
+          </Link>
           <a
             href={waUrl}
             target="_blank"

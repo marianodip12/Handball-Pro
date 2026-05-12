@@ -38,6 +38,12 @@ interface MatchStoreState {
   // ─── Settings (UX preferences)
   autoSwitchAttacker: boolean;
   setAutoSwitchAttacker: (v: boolean) => void;
+  /** Modo rápido para entrenadores experimentados — atajos en live match */
+  superpowerMode: boolean;
+  setSuperpowerMode: (v: boolean) => void;
+  /** Tema visual premium opcional — más densidad, animaciones, tipografía pulida */
+  uiProMax: boolean;
+  setUiProMax: (v: boolean) => void;
 
   // ─── Teams
   teams: HandballTeam[];
@@ -94,6 +100,10 @@ export const useMatchStore = create<MatchStoreState>()(
       // ─── Settings ─────────────────────────────────────────────────
       autoSwitchAttacker: true,
       setAutoSwitchAttacker: (v) => set({ autoSwitchAttacker: v }),
+      superpowerMode: false,
+      setSuperpowerMode: (v) => set({ superpowerMode: v }),
+      uiProMax: false,
+      setUiProMax: (v) => set({ uiProMax: v }),
 
       // ─── Teams ────────────────────────────────────────────────────
       teams: [],
@@ -291,6 +301,8 @@ export const useMatchStore = create<MatchStoreState>()(
       // (If you want the clock to reset on reload, drop liveClock here.)
       partialize: (s) => ({
         autoSwitchAttacker: s.autoSwitchAttacker,
+        superpowerMode: s.superpowerMode,
+        uiProMax: s.uiProMax,
         teams: s.teams,
         selectedTeamId: s.selectedTeamId,
         completed: s.completed,
